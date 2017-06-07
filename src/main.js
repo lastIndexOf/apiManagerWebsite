@@ -11,6 +11,7 @@ import store from './store'
 import './assets/styles/reset.css'
 import '../node_modules/sweetalert2/dist/sweetalert2.min.css'
 import './assets/styles/fonts/iconfont.css'
+import 'animate.css'
 
 /* eslint-disable no-new */
 new Vue({
