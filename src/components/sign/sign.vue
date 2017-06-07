@@ -5,7 +5,7 @@
         <h1 class="title">登录</h1>
         <form>
           <div class="form-control" :class="{yellow: isYellow}">
-            <input class="username" :class="{yellow: isYellow}" type="text" placeholder="用户名/邮箱" v-model="username">
+            <input class="username" :class="{yellow: isYellow}" type="text" placeholder="用户名/邮箱/手机号" v-model="username">
           </div>
           <div class="form-control" :class="{yellow: isYellowt}">
             <input class="password" :class="{yellow: isYellowt}" type="password" placeholder="密码" v-model="password">
@@ -17,6 +17,7 @@
             </span>
           </div>
         </form>
+        <div class="signup" @click="signup">注册新账号</div>
       </div>
     </div>
   </div>
@@ -24,6 +25,8 @@
 <script>
 import loading from '../loading/loading'
 import router from '../../router'
+import swal from 'sweetalert2'
+import request from 'superagent'
 
 export default {
   data() {
@@ -54,6 +57,85 @@ export default {
 
         router.push('/home')
       }, 1000)
+    },
+    _valiInput(data) {
+      if (!/^([a-zA-Z])[\w\W]{7,}/.test(data.username.value)) {
+        swal('', '请输入以字母开头，至少为7位的用户名', 'warning')
+        return false
+      }
+
+      if (data.repeat.value !== data.password.value) {
+        swal('', '请确保两次输入密码相同', 'warning')
+        return false
+      }
+
+      if (!/[\w\W]{7,}/.test(data.password.value)) {
+        swal('', '请输入至少为7为的密码', 'warning')
+        return false
+      }
+
+      if (!/^[\w\W]+@[\w\W]+.com$/.test(data.email.value)) {
+        swal('', '请输入正确的邮箱地址', 'warning')
+        return false
+      }
+
+      if (!/^1[0-9]{10}$/.test(data.phone.value)) {
+        swal('', '请输入正确的11位电话号码', 'warning')
+        return false
+      }
+
+      return true
+    },
+    signup() {
+      const self = this
+
+      swal({
+        title: '新账号注册',
+        html:
+          '<form id="signup-form">' +
+            '<input type="text" name="username" class="swal2-input" placeholder="用户名"/>' + 
+            '<input type="password" name="password" class="swal2-input" placeholder="密码"/>' + 
+            '<input type="password" name="repeat" class="swal2-input" placeholder="重复密码"/>' + 
+            '<input type="email" name="email" class="swal2-input" placeholder="邮箱"/>' +
+            '<input type="text" name="phone" class="swal2-input" placeholder="电话"/>' +
+          '</form>',
+        confirmButtonText: '注册',
+        showLoaderOnConfirm: true,
+        preConfirm() {
+          return new Promise((resolve, reject) => {
+            const form = document.querySelector('#signup-form').elements
+
+            if (self._valiInput(form))
+              request.post('/apiManagerEndCode/src/user.php')
+                .type('form')
+                .send({
+                  username: form.username.value,
+                  password: form.password.value,
+                  email: form.email.value,
+                  phone: form.phone.value
+                })
+                .end((err, res) => {
+                  if (err)
+                    console.error(err)
+
+                  else {
+                    if (res.status === 201) {
+                      resolve()
+                    } else {
+                      reject('signup wrong')
+                    }
+                  }
+                })
+            else
+              reject()
+          })
+        }
+      }).then(() => {
+        swal('', '注册成功！:)', 'success')
+      }).catch(msg => {
+        if (msg === 'signup wrong')
+          swal('', '注册失败:(, 请稍后再试', 'wrong')
+      })
     }
   },
   components: { loading } 
@@ -122,4 +204,12 @@ export default {
               width 38px
               height 38px
               z-index 999
+      .signup
+        margin-top 24px
+        display inline-block
+        color #fff
+        padding 12px 24px
+        cursor pointer
+        &:hover
+          color #fa3140
 </style>
