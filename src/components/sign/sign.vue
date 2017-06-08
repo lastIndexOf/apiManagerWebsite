@@ -52,11 +52,31 @@ export default {
     signin() {
       this.isSigned = true
 
-      setTimeout(() => {
-        this.isSigned = false
+      request.post('/apiManagerEndCode/src/user.php')
+        .query({
+          type: 1
+        })
+        .send({
+          username: this.username,
+          password: this.password
+        })
+        .end((err, res) => {
+          if (err) {
+            this.isSigned = false
+            swal('', '出错了:(', 'error')
+          }
+          else {
+            const data = JSON.parse(res.text)
 
-        router.push('/home')
-      }, 1000)
+            if (data.result == 1) {
+              this.isSigned = false
+              router.replace('/home')
+            } else if (data.result == 0) {
+              this.isSigned = false
+              swal('', data.msg, 'error')
+            }
+          }
+        })
     },
     _valiInput(data) {
       if (!/^([a-zA-Z])[\w\W]{7,}/.test(data.username.value)) {
@@ -108,6 +128,9 @@ export default {
             if (self._valiInput(form))
               request.post('/apiManagerEndCode/src/user.php')
                 .type('form')
+                .query({
+                  type: 0
+                })
                 .send({
                   username: form.username.value,
                   password: form.password.value,
@@ -119,12 +142,12 @@ export default {
                     console.error(err)
 
                   else {
-                    const data = JSON.parse(res.body)
-                    
+                    const data = JSON.parse(res.text)
+
                     if (data.result == 1) {
                       resolve()
                     } else {
-                      reject('signup wrong')
+                      reject(data.msg)
                     }
                   }
                 })
