@@ -35,4 +35,3 @@ export default {
     .iconfont
       font-size 32px
 </style>
-

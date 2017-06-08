@@ -2,7 +2,7 @@
   <div id="doc">
     <close @back="back"></close>
     <div class="doc-wrapper">
-    
+      
     </div>
   </div>
 </template>
@@ -17,7 +17,7 @@ import { mapMutations, mapState } from 'vuex'
 export default {
   data() {
     return {
-      
+
     }
   },
   computed: {
@@ -44,7 +44,7 @@ export default {
     this.showMenu()
   },
   mounted() {
-    
+
   },
   components: { close }
 }
