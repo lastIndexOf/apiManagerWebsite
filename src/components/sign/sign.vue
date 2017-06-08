@@ -119,7 +119,9 @@ export default {
                     console.error(err)
 
                   else {
-                    if (res.status === 201) {
+                    const data = JSON.parse(res.body)
+                    
+                    if (data.result == 1) {
                       resolve()
                     } else {
                       reject('signup wrong')

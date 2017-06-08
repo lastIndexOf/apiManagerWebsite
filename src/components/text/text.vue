@@ -2,7 +2,7 @@
   <div id="text">
     <close @back="back"></close>
     <div class="text-wrapper">
-    
+      <text-wrapper></text-wrapper>
     </div>
   </div>
 </template>
@@ -12,7 +12,7 @@ import router from '../../router'
 import close from '../close/close'
 import swal from 'sweetalert2'
 import { mapMutations, mapState } from 'vuex'
-
+import textWrapper from '../textWrapper/textWrapper'
 
 export default {
   data() {
@@ -46,7 +46,7 @@ export default {
   mounted() {
     
   },
-  components: { close }
+  components: { close, textWrapper }
 }
 </script>
 
