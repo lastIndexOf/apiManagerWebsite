@@ -3,7 +3,9 @@
     <div class="left-wrapper">
 
     </div>
-    <div class="right-wrapper">2</div>
+    <div class="right-wrapper">
+      
+    </div>
   </div>
 </template>
 <script>
