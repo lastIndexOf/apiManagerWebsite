@@ -8,7 +8,7 @@
       <div class="left">
         <div class="avatar">
           <img :src="user.avatar" :alt="user.username" width="150" height="150">
-          <input class="select-file" type="file">
+          <input class="select-file" type="file" @change="changeAvatar">
         </div>
         <ul class="tabs-wrapper">
           <li class="tab personal" :class="{active: pageIndex === 0}" @click="pageIndex = 0">个人信息</li>
@@ -32,6 +32,7 @@ import close from '../close/close'
 import router from '../../router'
 import request from 'superagent'
 import { mapMutations, mapState } from 'vuex'
+import swal from 'sweetalert2'
 
 export default {
   data() {
@@ -47,13 +48,50 @@ export default {
   computed: {
     ...mapState([
       'user',
-      'isBlur'
+      'isBlur',
+      'user'
     ])
   },
   methods: {
     ...mapMutations([
-      'cancelBlur'
+      'cancelBlur',
+      'setAvatar'
     ]),
+    changeAvatar(e) {
+      const self = this
+
+      this.filereader.onload = function() {
+        request.post('/apiManagerEndCode/src/user.php?type=5')
+          .type('form')
+          .send({
+            avatar: this.result
+          })
+          .end((err, res) => {
+            if (err)
+              console.error(err)
+            else {
+              const data = JSON.parse(res.text)
+
+              if (data.result == 1) {
+                swal({
+                  target: "#setting",
+                  text: '修改头像成功',
+                  type: 'success'
+                })
+                self.setAvatar(this.result)
+              } else {
+                swal({
+                  target: "#setting",
+                  text: data.msg,
+                  type: 'error'
+                })
+              }
+            }
+          })
+      }
+
+      this.filereader.readAsDataURL(e.target.files[0])
+    },
     back() {
       this.cancelBlur()
       this.$emit('cancelSetting')
@@ -69,6 +107,9 @@ export default {
           }
         })
     }
+  },
+  created() {
+    this.filereader = new FileReader()
   },
   components: { close }
 }
@@ -115,7 +156,7 @@ $flexWidth = 300px
           left 0
           cursor pointer
           opacity 0
-          z-index 9999
+          z-index 99
         img
           border-radius 50%
       .tabs-wrapper

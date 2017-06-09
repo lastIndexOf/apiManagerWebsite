@@ -136,32 +136,6 @@ export default {
             padding 18px 18px 0 32px
             text-align left
             &:hover
-<<<<<<< HEAD
-              background-color #ddd
-            .text-title
-              display inline-block
-              max-width 120px
-              margin 0
-              padding 0 12px
-              line-height 24px
-              font-size 18px
-              white-space nowrap
-              overflow hidden
-              text-overflow ellipsis
-              @media screen and (min-width: 1440px)
-                max-width 180px
-            .m-title
-              display inline-block
-              font-size 12px
-              line-height 24px
-              max-width 150px
-              white-space nowrap
-              overflow hidden
-              text-overflow ellipsis
-              @media screen and (min-width: 1440px)
-                max-width 240px
-</style>
-=======
               background-color rgb(250, 255, 189)
             &.active
               background-color rgb(250, 255, 189)
