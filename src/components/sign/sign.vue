@@ -49,14 +49,26 @@ export default {
     }
   },
   methods: {
+    _getType() {
+      if (/^1[0-9]{10}$/.test(this.username))
+        return 1
+      
+      if (/^[\w\W]+@[\w\W]+.com$/.test(this.username))
+        return 2
+      
+      return 0
+    },
     signin() {
       this.isSigned = true
 
+      const type = this._getType()
       request.post('/apiManagerEndCode/src/user.php')
+        .type('form')
         .query({
           type: 1
         })
         .send({
+          type,
           username: this.username,
           password: this.password
         })
@@ -69,18 +81,22 @@ export default {
             const data = JSON.parse(res.text)
 
             if (data.result == 1) {
-              this.isSigned = false
-              router.replace('/home')
+              setTimeout(() => {
+                this.isSigned = false
+                router.replace('/home')
+              }, 1000)
             } else if (data.result == 0) {
-              this.isSigned = false
-              swal('', data.msg, 'error')
+              setTimeout(() => {
+                this.isSigned = false
+                swal('', data.msg, 'error')
+              }, 1000)
             }
           }
         })
     },
     _valiInput(data) {
-      if (!/^([a-zA-Z])[\w\W]{7,}/.test(data.username.value)) {
-        swal('', '请输入以字母开头，至少为7位的用户名', 'warning')
+      if (!/^([a-zA-Z])[^@]{7,}/.test(data.username.value)) {
+        swal('', '请输入以字母开头，至少为7位且不包含@的用户名', 'warning')
         return false
       }
 

@@ -11,6 +11,9 @@ import router from '../../router/index'
 import { mapMutations } from 'vuex'
 
 export default {
+  props: {
+    
+  },
   methods: {
     ...mapMutations([
       'back',
