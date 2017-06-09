@@ -27,6 +27,7 @@ import loading from '../loading/loading'
 import router from '../../router'
 import swal from 'sweetalert2'
 import request from 'superagent'
+import { mapState, mapMutations } from 'vuex'
 
 export default {
   data() {
@@ -37,6 +38,9 @@ export default {
     }
   },
   computed: {
+    ...mapState([
+      'user'
+    ]),
     isYellow() {
       if (this.username)
         return true
@@ -45,10 +49,14 @@ export default {
     isYellowt() {
       if (this.password)
         return true
+
       return false
     }
   },
   methods: {
+    ...mapMutations([
+      'setUser'
+    ]),
     _getType() {
       if (/^1[0-9]{10}$/.test(this.username))
         return 1
@@ -83,6 +91,7 @@ export default {
             if (data.result == 1) {
               setTimeout(() => {
                 this.isSigned = false
+                this.setUser(data.user)
                 router.replace('/home')
               }, 1000)
             } else if (data.result == 0) {
@@ -145,7 +154,7 @@ export default {
               request.post('/apiManagerEndCode/src/user.php')
                 .type('form')
                 .query({
-                  type: 0
+                  type: 6
                 })
                 .send({
                   username: form.username.value,

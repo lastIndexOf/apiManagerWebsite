@@ -32,6 +32,9 @@ export default new Vuex.Store({
     },
     notShowMenu(state) {
       state.showTabs = false
+    },
+    setUser(state, user) {
+      state.user = user
     }
   },
   actions: {

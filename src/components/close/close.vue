@@ -1,6 +1,6 @@
 <template>
   <div id="back">
-    <div class="back-wrapper" @click.stop="goBack">
+    <div class="back-wrapper" @click.stop="goBack" :style="{top: top}">
       <i class="iconfont icon-houtui"></i>
     </div>
   </div>
@@ -11,9 +11,7 @@ import router from '../../router/index'
 import { mapMutations } from 'vuex'
 
 export default {
-  props: {
-    
-  },
+  props: [ 'top' ],
   methods: {
     ...mapMutations([
       'back',
