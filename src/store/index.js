@@ -35,6 +35,9 @@ export default new Vuex.Store({
     },
     setUser(state, user) {
       state.user = user
+    },
+    setAvatar(state, avatar) {
+      state.user.avatar = avatar
     }
   },
   actions: {

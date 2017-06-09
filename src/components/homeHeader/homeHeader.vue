@@ -126,7 +126,6 @@ export default {
       overflow auto
       background-color #fff
       box-shadow 0px 2px 10px #ddd, -2px 0px 10px #ddd
-      z-index 9999
       @media screen and (max-height: 900px)
         height 540px
   .header-wrapper
