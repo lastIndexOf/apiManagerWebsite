@@ -17,6 +17,13 @@
           {{ curt }}</p>
       </li>
     </ul>
+    <div class="bg-wrapper" v-show="showSetting">
+      <transition name="scaleIn">
+        <div class="setting-wrapper" v-if="showSetting">
+          <setting top="32px" @cancelSetting="cancelSetting"></setting>
+        </div>
+      </transition>
+    </div>
   </header>
 </template>
 <script>
@@ -25,6 +32,8 @@ import anime from 'animejs'
 import swal from 'sweetalert2'
 import { mapMutations } from 'vuex'
 
+import setting from '../setting/setting'
+
 export default {
   data() {
     return {
@@ -32,7 +41,8 @@ export default {
       timer: '',
       currentTime: {
         now: ''
-      }
+      },
+      showSetting: false
     }
   },
   computed: {
@@ -41,6 +51,9 @@ export default {
     }
   },
   methods: {
+    cancelSetting() {
+      this.showSetting = false
+    },
     _initTime() {
       const self = this
 
@@ -75,18 +88,8 @@ export default {
       })
     },
     setting() {
-      const self = this
-
       this.beBlur()
-      swal({
-        text: '暂不支持设置',
-        timer: 1500,
-        type: 'warning'
-      }).then(() => {
-        self.cancelBlur()
-      }).catch(msg => {
-        self.cancelBlur()
-      })
+      this.showSetting = true
     },
     ...mapMutations([
       'back',
@@ -96,14 +99,36 @@ export default {
   },
   created() {
     this._initTime()
-  }
+  },
+  components: { setting }
 }
 </script>
 <style lang="stylus">
 #homeheader
+  position relative
   padding 20px 0
   width 100%
   heigth 60px
+  .bg-wrapper
+    position fixed
+    top 0
+    left 0 
+    bottom 0
+    right 0
+    z-index 9999
+    background-color rgba(7, 17, 27, .5)
+    .setting-wrapper
+      position absolute
+      top 64px
+      left 20%
+      right 20%
+      height 720px
+      overflow auto
+      background-color #fff
+      box-shadow 0px 2px 10px #ddd, -2px 0px 10px #ddd
+      z-index 9999
+      @media screen and (max-height: 900px)
+        height 540px
   .header-wrapper
     display flex
     flex-flow nowrap row
