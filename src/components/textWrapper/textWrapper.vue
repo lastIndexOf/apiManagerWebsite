@@ -2,7 +2,7 @@
   <div id="text-wrapper">
     <div class="left-wrapper">
       <h2 class="title">个人备忘录</h2>
-        
+
       <div class="content-wrapper">
         <div class="main-content">
           <ul class="text-list">
@@ -15,7 +15,7 @@
       </div>
     </div>
     <div class="right-wrapper">
-      
+
     </div>
   </div>
 </template>
@@ -54,9 +54,9 @@ export default {
     }
   },
   mounted() {
-    
+
   }
-} 
+}
 </script>
 <style lang="stylus">
 #text-wrapper

@@ -1,23 +1,46 @@
 <template>
+
   <div id="new">
     <close @back="back"></close>
     <div class="new-wrapper">
-      <h1 class="create_title">新增文档</h1>
-      <div class="doc_infor">
+      <transition name="fade">
+      <div class="doc_infor" v-if="showDoc">
+        <div class="head"></div>
+        <h1 class="create_title">新增文档</h1>
         <ul>
           <li>
             <span>文档标题：</span>
-            <input type="text" name="title" value="" placeholder="输入文档标题">
+            <input type="text" name="title" value="" placeholder="输入文档标题" v-model="doc.title">
           </li>
           <li>
-            <span>文档类型</span>
+            <span>文档类型：</span>
             <span class="group_num">{{resultName[0]}}</span>
             <span class="doc_type">{{resultName[1]}}</span>
           </li>
-          <li></li>
-          <li></li>
+          <li>
+            <span>文档描述：</span>
+            <textarea class="intro" name="name" rows="8" cols="72" v-model="doc.docIntro"></textarea>
+          </li>
+          <li>
+            <span>一个新的群组：</span>
+            <input type="text" name="" v-model="newGroup" value="" placeholder="输入群组名称">
+          </li>
+          <li style="position: relative;" v-if="docType[0] == '1'">
+            <span>群组成员：</span>
+            <div class="group-person">
+              <span v-for="person in persons">
+                {{person.username}}
+                <i class="icon iconfont icon-shanchu" @click="removeArray(persons, person.username)"></i>
+              </span>
+              <input type="text" name="" value="" v-model="newPerson.username" placeholder="输入项目成员，‘enter’键添加" @keydown.13="addPerson()">
+            </div>
+          </li>
         </ul>
+        <div class="ensure">
+          <button type="button" name="button" @click="createGroup()">创建</button>
+        </div>
       </div>
+      </transition>
     </div>
   </div>
 </template>
@@ -27,18 +50,32 @@ import router from '../../router'
 import close from '../close/close'
 import swal from 'sweetalert2'
 import { mapMutations, mapState } from 'vuex'
+import request from 'superagent'
 
 
 export default {
   data() {
     return {
       docType: ["0","0"],
-      resultName: ["单人文档","web"]
+      resultName: ["单人文档","web"],
+      showDoc: false,
+      persons: [],
+      newPerson: {
+        userid: "",
+        username: ""
+      },
+      newGroup: "",
+      newGroupID: "",
+      doc: {
+        title: "",
+        docIntro: "",
+      }
     }
   },
   computed: {
     ...mapState([
-      'showTabs'
+      'showTabs',
+      'user'
     ])
   },
   methods: {
@@ -53,6 +90,12 @@ export default {
       this.cancelBlur()
       this.$emit('cancelBlur')
       router.replace('/home')
+    },
+    addPerson: function(){
+      var self = this
+      self.persons.push(self.newPerson)
+      self.newPerson = {}
+      //获取人物信息
     },
     createDoc: function(){
       var self = this
@@ -81,31 +124,88 @@ export default {
           }
         }
       ]
-
       swal.queue(steps).then(function (result) {
         swal.resetDefaults()
         self.docType = result
         if(result[0] == 0){
-          resultName[0] = "单人文档"
+          self.resultName[0] = "单人文档"
         }else{
-          resultName[0] = "多人文档"
+          self.resultName[0] = "多人文档"
         }
         switch(result[1]){
-          case "0": resultName[1] = "web";
+          case "0": self.resultName[1] = "web";
           default: break;
         }
         swal({
           title: '创建成功',
           html:
             '你的文档类型: <pre>' +
-              JSON.stringify(resultName) +
+              JSON.stringify(self.resultName) +
             '</pre>',
           confirmButtonText: '确定',
           showCancelButton: false
+        }).then(() => {
+            self.showDoc = true
         })
+      }).then(function(){
       }, function () {
         swal.resetDefaults()
       })
+    },
+    removeArray: function(arr, val){
+      for (var i = 0; i < arr.length; i ++){
+        if (arr[i].username == val){
+          arr.splice(i, 1)
+          break
+        }
+      }
+    },
+    createGroup: function(){
+      var self = this
+      if (self.doc.title == ""){
+        swal("文档标题不能为空哦")
+      }else if(self.doc.docIntro == ""){
+        swal("文档描述不能为空哦")
+      }else if(self.newGroup == ""){
+        swal("必须为文档建立一个群组")
+      }else{
+        request
+          .post('/apiManagerEndCode/src/group.php')
+          .send({name: self.newGroup})
+          .set('Accept', 'application/json')
+          .end(function(err, response){
+            var res = JSON.parse(response)
+            if(res.result == 1){
+              self.newGroupID = res.id
+              request
+                .post('/apiManagerEndCode/src/docs.php')
+                .send({
+                  title: self.group.title,
+                  type: Array.join(self.docType),
+                  desc: self.group.docIntro,
+                  groupid: self.newGroupID
+                })
+                .set('Accept', 'application/json')
+                .end(function(err, response){
+                  var res = JSON.parse(response)
+                  if(res.result == 1){
+                    swal("创建成功")
+                  }else if(res.result == 0){
+                    swal(res.msg)
+                  }else{
+                    swal(err)
+                  }
+                })
+            }else if(res.result == 0){
+              swal("失败了" +　res.msg)
+            }else{
+              swal("发生了未知的错误")
+            }
+          })
+      }
+      // request
+      //   .post(/apiManagerEndCode/src/group.php)
+      //   .send()
     }
   },
   created() {
@@ -135,15 +235,33 @@ export default {
     background-color #fff
     box-shadow 10px 10px 10px rgba(7, 17 ,27, .5)
     padding-top: 20px
-    .create_title
-      width: 100%
-      font-size: 20px
     .doc_infor
-      width: 60%
+      position: relative
+      width: 700px
       height: 93%
       margin: 0 auto
-      padding-top: 30px
+      padding: 30px 10px 0 10px
       font-size: 18px
+      border: 1px solid rgb(199, 199, 199)
+      box-shadow: 3px 3px 5px rgb(142, 142, 142)
+      border-bottom-left-radius: 20px 500px
+      border-bottom-right-radius: 500px 30px
+      border-top-right-radius: 5px 100px
+      background: linear-gradient(to bottom,rgb(249, 248, 194), rgb(232, 231, 130) 70%,rgb(238, 237, 129))
+      .head
+        width: 200px
+        height: 30px
+        background-color: #ffffff
+        opacity: .6
+        position: absolute
+        top: -10px
+        left: 50%
+        margin-left: -100px
+        box-shadow: 0 0 5px rgb(93, 93, 93)
+        transform: rotate(-3deg)
+      .create_title
+        width: 100%
+        font-size: 20px
       ul
         width: 100%
         li
@@ -158,13 +276,75 @@ export default {
             height: 30px
             margin-top: 10px
             border-radius: 5px
-            border: 1px solid rgb(214, 214, 214)
+            border: 1px solid rgb(122, 135, 172)
             color: rgb(157, 157, 157)
+            background-color: rgba(249, 248, 194,0)
+            text-indent: 5px
           .group_num
-            width: 50%
+            width: 30%
             display: inline-block
+            padding: 5px
+            border: 1px solid rgb(122, 135, 172)
+            margin-top: 10px
+            border-radius: 5px
+            color: rgb(157, 157, 157)
           .doc_type
-            width: 50%
+            width: 30%
             display: inline-block
+            padding: 5px
+            margin-left: 20px
+            border: 1px solid rgb(122, 135, 172)
+            border-radius: 5px
+            color: rgb(157, 157, 157)
+          .intro
+            margin-top: 10px
+            border: 1px solid rgb(122, 135, 172)
+            border-radius: 7px
+            color: rgb(157, 157, 157)
+            font-size: 16px
+            background-color: rgba(249, 248, 194,0)
+          .group-person
+            width: 100%
+            height: 30px
+            margin-top: 10px
+            border-radius: 5px
+            border: 1px solid rgb(122, 135, 172)
+            color: rgb(157, 157, 157)
+            line-height: 30px
+            text-indent: 2px
+            white-space: nowrap
+            overflow: hidden
+            span
+              display: inline
+              padding: 2px
+              box-shadow: 0 0 1px rgb(138, 138, 138)
+              margin-right: 3px
+              .icon-shanchu
+                font-size: 5px
+            input
+              display:inline
+              width: 700px
+              height: 25px
+              margin: 0
+              border: none
+              color: rgb(157, 157, 157)
+      .ensure
+        width: 100%
+        margin-top: 70px
+        button
+          width: 100px
+          height: 35px
+          margin: 30px
+          border-radius: 5px
+          outline: none
+          border: 1px solid rgb(145, 145, 145)
+          transform: translateX(180px)
+          &:hover
+            opacity: .5
+            box-shadow: 0 0 5px rgb(240, 128, 103)
 
+.fade-enter-active, .fade-leave-active
+  transition: all  1s
+.fade-enter, .fade-leave-active
+  opacity: 0
 </style>
