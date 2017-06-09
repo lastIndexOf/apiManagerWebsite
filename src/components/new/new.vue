@@ -37,7 +37,8 @@
           </li>
         </ul>
         <div class="ensure">
-          <button type="button" name="button" @click="createGroup()">创建</button>
+          <span class="createBtn" @click="createGroup()">创建</span>
+          <i class="icon iconfont icon-plumage"></i>
         </div>
       </div>
       </transition>
@@ -329,19 +330,16 @@ export default {
               border: none
               color: rgb(157, 157, 157)
       .ensure
-        width: 100%
         margin-top: 70px
-        button
-          width: 100px
-          height: 35px
-          margin: 30px
-          border-radius: 5px
-          outline: none
-          border: 1px solid rgb(145, 145, 145)
-          transform: translateX(180px)
+        transform: translateX(230px)
+        .createBtn
+          margin-top: 30px
           &:hover
-            opacity: .5
-            box-shadow: 0 0 5px rgb(240, 128, 103)
+            text-decoration: underline
+            cursor: pointer
+        i
+          font-size: 37px
+          margin-left: 5px
 
 .fade-enter-active, .fade-leave-active
   transition: all  1s
