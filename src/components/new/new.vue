@@ -1,5 +1,4 @@
 <template>
-
   <div id="new">
     <close @back="back"></close>
     <div class="new-wrapper">
@@ -215,6 +214,8 @@ export default {
   },
   mounted() {
     this.createDoc();
+    var editor = new Editor()
+    editor.render()
   },
   components: { close }
 }
