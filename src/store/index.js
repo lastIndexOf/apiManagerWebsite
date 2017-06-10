@@ -38,6 +38,10 @@ export default new Vuex.Store({
     },
     setAvatar(state, avatar) {
       state.user.avatar = avatar
+    },
+    setInformation(state,[ name, job ]) {
+      state.user.name = name
+      state.user.job = job
     }
   },
   actions: {

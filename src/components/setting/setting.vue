@@ -21,7 +21,20 @@
       </div>
       <div class="right">
         <div class="personal" v-if="pageIndex===0">
-          <h3 class="title">个人信息</h3>
+          <h3 class="title">个人信息 <span class="edit" @click.stop.prevent="edit">修改</span></h3>
+
+          <div class="personal-wrapper">
+            <form>
+              <div class="form-control">
+                <label for="name">姓名</label>
+                <input type="text" name="name" v-model="name" placeholder="例如: 李月辉">
+              </div>
+              <div class="form-control">
+                <label for="job">职位</label>
+                <input type="text" name="job" v-model="job" placeholder="例如: java开发工程师">
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </div>
@@ -37,7 +50,9 @@ import swal from 'sweetalert2'
 export default {
   data() {
     return {
-      pageIndex: 0
+      pageIndex: 0,
+      name: '',
+      job: ''
     }
   },
   props: {
@@ -55,8 +70,39 @@ export default {
   methods: {
     ...mapMutations([
       'cancelBlur',
-      'setAvatar'
+      'setAvatar',
+      'setInformation'
     ]),
+    edit() {
+      request.post('/apiManagerEndCode/src/user.php?type=2')
+        .type('form')
+        .send({
+          userid: this.user.id,
+          username: this.user.username,
+          password: this.user.password,
+          email: this.user.email,
+          phone: this.user.phone,
+          name: this.name,
+          job: this.job
+        })
+        .end((err, res) => {
+          if (err)
+            console.error(err)
+          else {
+            const data = JSON.parse(res.text)
+
+            if (data.result == 1) {
+              swal({
+                target: "#setting",
+                text: '修改成功',
+                type: 'success'
+              })
+
+              this.setInformation([this.name, this.job])
+            }
+          }
+        })
+    },
     changeAvatar(e) {
       const self = this
 
@@ -107,6 +153,10 @@ export default {
           }
         })
     }
+  },
+  mounted() {
+    this.name = this.user.name
+    this.job = this.user.job
   },
   created() {
     this.filereader = new FileReader()
@@ -184,4 +234,34 @@ $flexWidth = 300px
       width 100%
       height 100%
       padding-left 32px
+      padding-top 64px
+      .personal
+        padding 12px
+        .title
+          padding 12px
+          text-align left
+          font-size 20px
+          font-weight normal
+          .edit
+            float right
+            font-size 12px
+            cursor pointer
+            margin-right 32px
+            &:hover
+              color #fa3140
+        .personal-wrapper
+          padding 32px
+          text-align left
+          .form-control
+            width 100%
+            margin-bottom 24px
+            label
+              display inline-block
+              padding 12px 24px
+              background-color rgb(243, 245, 247)
+            input
+              border 0
+              padding 12px
+              border-bottom 1px solid #ddd
+              min-width 70%
 </style>

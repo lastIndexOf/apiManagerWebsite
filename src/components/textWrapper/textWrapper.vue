@@ -10,7 +10,7 @@
             <li class="text"
               v-for="item of data"
               :data-time="item.time"
-              @click.stop.prevent="enterText(item.id)"
+              @click.stop.prevent="enterText(item)"
               :class="{active: activeId == item.id}">
               <div class="item-wrapper">
                 <h3 class="text-title">{{ item.title }}</h3>
@@ -25,7 +25,14 @@
       </div>
     </div>
     <div class="right-wrapper">
-
+      <div class="nothing-wrapper" v-if="showAddText">
+        请点击备忘信息查看详情
+      </div>
+      <transition name="fade">
+        <div class="text-content" v-if="showText">
+          {{ text }}
+        </div>
+      </transition>
     </div>
   </div>
 </template>
@@ -65,12 +72,24 @@ export default {
           time: '2017-06-09 12:15:85'
         },
       ],
-      activeId: 0
+      activeId: 0,
+      showText: false,
+      showAddText: true,
+      text: {}
     }
   },
   methods: {
-    enterText(id) {
-      this.activeId = id
+    enterText(item) {
+      this.activeId = item.id
+
+      this.showAddText = false
+      this.showText = true
+      this.text = item
+
+      this.showText = false
+      this.$nextTick(() => {
+        this.showText = true
+      })
     }
   },
   mounted() {
@@ -79,6 +98,14 @@ export default {
 }
 </script>
 <style lang="stylus">
+.fade-enter-active
+  transition all .6s
+  transform translate3d(0, 0, 0)
+  opacity 1
+.fade-enter
+  opacity 0
+  transform translate3d(120px, 0, 0)
+
 #text-wrapper
   width 100%
   height 100%
@@ -169,5 +196,26 @@ export default {
                   text-overflow ellipsis
                   @media screen and (min-width: 1440px)
                     max-width 240px
+  .right-wrapper
+    padding 36px
+    position relative
+    .nothing-wrapper
+      position absolute
+      top 50%
+      left 50%
+      font-size 18px
+      font-weight 700
+      cursor pointer
+      transform translate3d(-50%, -100%, 0)
+      &::after
+        content ''
+        position absolute
+        width 120%
+        height 100%
+        left -16px
+        top 36px
+        transform rotateZ(-6deg)
+        border-top 1px solid #ddd
+    // background-color rgb(250, 255, 189)
 </style>
->>>>>>> 8d54fcad6c40566622ffdab045afa5a3aaeafafb
+
