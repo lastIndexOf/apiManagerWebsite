@@ -218,4 +218,3 @@ export default {
         border-top 1px solid #ddd
     // background-color rgb(250, 255, 189)
 </style>
-

@@ -12,6 +12,9 @@ import './assets/styles/reset.css'
 import '../node_modules/sweetalert2/dist/sweetalert2.min.css'
 import './assets/styles/fonts/iconfont.css'
 import 'animate.css'
+import Editor from '../src/assets/scripts/editor.js'
+import '../src/assets/scripts/markdown.js'
+// import '../src/assets/styles/editor.css'
 
 /* eslint-disable no-new */
 new Vue({
