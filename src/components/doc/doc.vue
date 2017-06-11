@@ -40,7 +40,7 @@
         </div>
         <div class="api-cont">
           <div class="head"></div>
-          <div class="api-head">
+          <div class="api-heads">
             <ul>
               <li :class="apiPage==0?'active':''" @click="apiPage = 0">群组概况</li>
               <li :class="apiPage==1?'active':''" @click="apiPage = 1">文档信息</li>
@@ -92,20 +92,132 @@
                   <span>{{doc.title}}</span>
                   <span style="font-size: 17px;float: right;font-weight: 400;margin-right: 10px">文档ID:{{group.id}}</span>
                 </div>
+                <div class="doc-type">
+                  <div class="doc-type-cont1">
+                    <span>{{doc.type[0]}}</span>
+                  </div>
+                  <div class="doc-type-cont2">
+                    <span>{{doc.type[1]}}</span>
+                  </div>
+                </div>
                 <div class="doc-desc">
-                  <div class="doc-desc-shadow">
-                    <div class="doc-desc-cont">
-                      {{doc.desc}}
-                    </div>
+                  <div class="doc-desc-cont">
+                    {{doc.desc}}
                   </div>
                 </div>
               </div>
               <div class="doc-right">
-
+                <div class="doc-apis">
+                  <div class="doc-apis-title">
+                    <span>接口列表</span>
+                  </div>
+                  <div class="doc-apis-body">
+                    <tr>
+                      <th>接口功能</th>
+                      <th style="width: 50%;">接口路径</th>
+                      <th style="width: 15%;margin-left: 5px;">操作</th>
+                    </tr>
+                    <div class="doc-api-list">
+                      <tr v-for="api in apis">
+                        <td>{{api.desc}}</td>
+                        <td style="width: 50%;"><span class="apiType">{{api.type}}</span>{{api.url}}</td>
+                        <td style="width: 15%;cursor: pointer"><span>删除</span></td>
+                      </tr>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
             <div class="api-body-api api-infor" v-if="apiPage == 2">
-
+              <div class="api-title">
+                <span class="test">测试</span>
+                <div class="api-title-cont">
+                  <div class="api-url">
+                    <span class="green-back">{{doc.type[1]}}</span>
+                    <span>{{api.url}}</span>
+                    <i class="icon iconfont icon-plumage" style="float: left;margin-left: 15px;cursor: pointer"></i>
+                  </div>
+                  <div class="api-desc">
+                    <span class="green-back">{{api.type}}</span>
+                    <span>{{api.desc}}</span>
+                    <i class="icon iconfont icon-plumage" style="float: left;margin-left: 15px;cursor: pointer"></i>
+                  </div>
+                </div>
+              </div>
+              <div class="api-head" type="table">
+                <tr  @click="showApiHead = !showApiHead">
+                  <th class="col-1"><i class="icon iconfont icon-zhankai1" v-if="!showApiHead"></i><i class="icon iconfont icon-shouqi" v-if="showApiHead"></i>头部</th>
+                  <th class="col-2">标签</th>
+                  <th class="col-2">内容</th>
+                  <th class="col-1">操作 <i class="icon iconfont icon-xinzeng" style="float: right;font-size: 20px;" @click="addHead()"></i></th>
+                </tr>
+                <div class="api-head-shadow">
+                  <tr v-for="apihead, index in apiHeads" v-if="showApiHead">
+                    <td class="col-1"><span style="margin-left: 15px">{{index+1}}</span></td>
+                    <td class="col-2"><select class="" name="">
+                      <option value="">Accept</option>
+                      <option value="">Accept-Charset</option>
+                      <option value="">Accept-Encoding</option>
+                      <option value="">Accept-Language</option>
+                      <option value="">Accept-Ranges</option>
+                    </select></td>
+                    <td class="col-2"><input type="text" name="" value=""></td>
+                    <td class="col-1"><span style="cursor: pointer" @click="removeHead(index)">删除</span></td>
+                  </tr>
+                </div>
+              </div>
+              <div class="api-request">
+                <tr @click="showApiRequest = !showApiRequest">
+                  <th class="col-1"><i class="icon iconfont icon-zhankai1" v-if="!showApiRequest"></i><i class="icon iconfont icon-shouqi" v-if="showApiRequest"></i>请求</th>
+                  <th class="col-2">参数</th>
+                  <th class="col-2">类型</th>
+                  <th class="col-2">值域</th>
+                  <th class="col-3">描述</th>
+                  <th class="col-2">操作 <i class="icon iconfont icon-xinzeng" style="float: right;font-size: 20px;" @click="addRequest()"></i></th>
+                </tr>
+                <div class="api-request-shadow">
+                  <tr v-for="request,index in apiRequests" v-if="showApiRequest">
+                    <td class="col-1">{{index+1}}<span style="padding: 0 5px;background: rgb(88, 219, 77);color:#ffffff;border-radius: 5px;margin-left: 3px" @click="request.requested = !request.requested">{{request.requested}}</span></td>
+                    <td class="col-2"><input type="text" name="" value="" v-model="request.param" style="max-width: 150px"></td>
+                    <td class="col-2"><select class="" name="">
+                      <option value="">String</option>
+                      <option value="">Number</option>
+                      <option value="">Object</option>
+                      <option value="">Array</option>
+                      <option value="">Date</option>
+                    </select></td>
+                    <td class="col-2"><input type="text" name="" value="" v-model="values" style="max-width: 150px"></td>
+                    <td class="col-3"><input type="text" name="" value="" v-model="request.desc"></td>
+                    <td class="col-2" @click="removeRequest(index)">删除</td>
+                  </tr>
+                </div>
+              </div>
+              <div class="api-response">
+                <tr @click="showApiResponse = !showApiResponse">
+                  <th class="col-1"><i class="icon iconfont icon-zhankai1" v-if="!showApiResponse"></i><i class="icon iconfont icon-shouqi" v-if="showApiResponse"></i>返回</th>
+                  <th class="col-2">参数</th>
+                  <th class="col-2">类型</th>
+                  <th class="col-2">值域</th>
+                  <th class="col-3">描述</th>
+                  <th class="col-2">操作 <i class="icon iconfont icon-xinzeng" style="float: right;font-size: 20px;" @click="addResponse()"></i></th>
+                </tr>
+                <div class="api-response-shadow">
+                  <tr v-for="response,index in apiResponses" v-if="showApiResponse">
+                    <td class="col-1">{{index+1}}<span style="padding: 0 5px;background: rgb(88, 219, 77);color:#ffffff;border-radius: 5px;margin-left: 3px" @click="response.responsed = !response.responsed">{{response.responsed}}</span></td>
+                    <td class="col-2"><input type="text" name="" value="" v-model="response.param" style="max-width: 150px"></td>
+                    <td class="col-2"><select class="" name="">
+                      <option value="">String</option>
+                      <option value="">Number</option>
+                      <option value="">Object</option>
+                      <option value="">Array</option>
+                      <option value="">Date</option>
+                    </select></td>
+                    <td class="col-2"><input type="text" name="" value="" v-model="values" style="max-width: 150px"></td>
+                    <td class="col-3"><input type="text" name="" value="" v-model="response.desc"></td>
+                    <td class="col-2" @click="removeResponse(index)">删除</td>
+                  </tr>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -156,7 +268,48 @@ export default {
         id: "1321313212",
         title: "这是测试文档",
         desc: "这是文档的描述",
-      }
+        type: ["多人文档","web"]
+      },
+      apis: [
+        {
+          desc: "user增",
+          id: "121212",
+          type: "POST",
+          url: "/tourplace/src/user.php"
+        }
+      ],
+      api: {
+        desc: "user增加",
+        id: "121212",
+        type: "POST",
+        url: "/tourplace/src/user.php"
+      },
+      apiHeads:[
+        {
+          desc: "sdfsd"
+        }
+      ],
+      showApiHead: false,
+      apiRequests:[
+        {
+          param: "id",
+          requested: true,
+          type: 0,
+          values: [],
+          desc: "这是个测试参数"
+        }
+      ],
+      showApiRequest: true,
+      apiResponses:[
+        {
+          param: "id",
+          responsed: true,
+          type: 0,
+          values: [],
+          desc: "这是个测试参数"
+        }
+      ],
+      showApiResponse: true
     }
   },
   computed: {
@@ -176,6 +329,45 @@ export default {
       this.cancelBlur()
       this.$emit('cancelBlur')
       router.replace('/home')
+    },
+    addHead: function(){
+      var self = this
+      self.showApiHead = false
+      self.apiHeads.push({desc: "dasda"})
+    },
+    removeHead: function(index){
+      var self = this
+      self.apiHeads.splice(index,1)
+    },
+    addRequest: function(){
+      var self = this
+      self.showApiRequest = false
+      self.apiRequests.push({
+        param: "",
+        requested: true,
+        type: 0,
+        values: [],
+        desc: "这是个测试参数"
+      })
+    },
+    removeRequest: function(index){
+      var self = this
+      self.apiRequests.splice(index,1)
+    },
+    addResponse: function(){
+      var self = this
+      self.showApiResponse = false
+      self.apiResponses.push({
+        param: "",
+        responsed: true,
+        type: 0,
+        values: [],
+        desc: "这是个测试参数"
+      })
+    },
+    removeResponse: function(index){
+      var self = this
+      self.apiResponses.splice(index,1)
     }
   },
   created() {
@@ -305,7 +497,7 @@ export default {
           left: 50%
           margin-left: -5%
           box-shadow: 0 0 5px rgb(119, 119, 119)
-        .api-head
+        .api-heads
           width: 30px
           position: absolute
           left: -30px
@@ -423,14 +615,268 @@ export default {
                 padding: 10px
                 border: 1px solid rgb(185, 185, 185)
                 text-align: left
+              .doc-type
+                width: 90%
+                height: 60px
+                margin: 0 auto 10px
+                line-height: 60px
+                font-size: 17px
+                .doc-type-cont1
+                  width: 40%
+                  height: 30px
+                  padding: 5px
+                  border: 1px solid rgb(185, 185, 185)
+                  float: left
+                  line-height: 30px
+                .doc-type-cont2
+                  width: 40%
+                  height: 30px
+                  padding: 5px
+                  border: 1px solid rgb(185, 185, 185)
+                  float: left
+                  margin-left: 30px
+                  line-height: 30px
               .doc-desc
                 width: 90%
-                height: 300px
+                height: 480px
                 margin: 0 auto
                 padding: 10px
                 text-align: left
                 border: 1px solid rgb(185, 185, 185)
+                overflow: hidden
+                .doc-desc-cont
+                  width: 101%
+                  height: 200px
+                  overflow: auto
             .doc-right
               flex: 0 0 50%
+              .doc-apis
+                width: 95%
+                height: 94%
+                border: 1px solid rgb(185, 185, 185)
+                margin: 20px auto
+                text-align: left
+                .doc-apis-title
+                  width: 90%
+                  margin: 20px auto
+                  font-size: 20px
+                  padding: 10px
+                  border-bottom: 1px solid rgb(185, 185, 185)
+                  text-align: left
+                .doc-apis-body
+                  width: 90%
+                  height: 550px
+                  margin: 0 auto
+                  overflow: hidden
+                  tr
+                    width: 100%
+                    display: block
+                    height: 30px
+                    th
+                      width: 30%
+                      display: inline-block
+                      margin-left: 5px
+                    td
+                      width: 30%
+                      display: inline-block
+                      overflow: hidden
+                      margin-left: 5px
+                      .apiType
+                        padding: 2px
+                        background-color: rgb(94, 221, 78)
+                        color: #ffffff
+                        border-radius: 5px
+                        font-size: 13px
+                        margin-right: 3px
+                  .doc-api-list
+                    width: 105%
+                    height: 530px
+                    overflow: auto
+        .api-body-api
+          padding-top: 10px
+          .api-title
+            width: 91%
+            height: 60px
+            line-height: 60px
+            border-bottom: 1px solid rgb(120, 120, 120)
+            box-shadow: 0 0 2px rgb(69, 139, 163)
+            margin: 10px auto
+            .test
+              display: block
+              height: 55px
+              width: 55px
+              float: left
+              margin-top: 2px
+              margin-left: 5px
+              border-radius: 5px
+              background: linear-gradient(to bottom, rgb(122, 232, 78), rgb(100, 209, 56), rgb(122, 232, 78))
+              box-shadow: 0 0 2px rgb(18, 241, 27)
+              color: #ffffff
+              font-size: 17px
+              cursor: pointer
+              &:active
+                opacity: .5
+            .api-title-cont
+              width: 85%
+              height: 55px
+              float: left
+              margin-top: 2px
+              .api-url
+                width: 100%
+                height: 50%
+                float: left
+                line-height: 27px
+                span
+                  display: block
+                  height: 25px
+                  float: left
+                  margin-left: 5px
+                .green-back
+                  width: 55px
+                  background: rgb(73, 179, 74)
+                  border-radius: 5px
+                  color: #ffffff
+              .api-desc
+                width: 100%
+                height: 50%
+                float: left
+                line-height: 27px
+                span
+                  display: block
+                  height: 25px
+                  float: left
+                  margin-left: 5px
+                .green-back
+                  width: 55px
+                  background: rgb(73, 179, 74)
+                  border-radius: 5px
+                  color: #ffffff
+          .api-head
+            width: 90%
+            margin: 0 auto
+            padding: 5px
+            border-bottom: 1px solid rgb(120, 120, 120)
+            box-shadow: 0 0 2px rgb(69, 139, 163)
+            max-height: 150px
+            overflow: hidden
+            tr
+              width: 100%
+              display: block
+              text-align: left
+              th
+                display: inline-block
+              .col-1
+                width: 16%
+              .col-2
+                width: 32%
+              .col-3
+                width: 48%
+            .api-head-shadow
+              width: 102%
+              height: 100%
+              overflow: auto
+              max-height: 150px
+              tr
+                width: 100%
+                display: block
+                text-align: left
+                td
+                  display: inline-block
+                  select
+                    background: rgba(0, 0, 0, 0)
+                    outline: none
+                    border: none
+                  input
+                    background: rgba(0, 0, 0, 0)
+                    outline: none
+                    border: none
+        .api-request
+          width: 90%
+          margin: 10px auto
+          padding: 5px
+          border-bottom: 1px solid rgb(120, 120, 120)
+          box-shadow: 0 0 2px rgb(69, 139, 163)
+          max-height: 200px
+          overflow: hidden
+          tr
+            display: block
+            width: 100%
+            text-align: left
+            th
+              display: inline-block
+            .col-1
+              width: 8%
+            .col-2
+              width: 16%
+            .col-3
+              width: 24%
+          .api-request-shadow
+            width: 102%
+            height: 100%
+            overflow: auto
+            max-height: 200px
+            tr
+              display: block
+              width: 100%
+              text-align: left
+              td
+                display: inline-block
+                input
+                  background: rgba(0, 0, 0, 0)
+                  border: none
+                select
+                  background: rgba(0, 0, 0, 0)
+                  border: none
+                  outline: none
+              .col-1
+                width: 8%
+              .col-2
+                width: 16%
+              .col-3
+                width: 24%
+        .api-response
+          width: 90%
+          margin: 10px auto
+          padding: 5px
+          border-bottom: 1px solid rgb(120, 120, 120)
+          box-shadow: 0 0 2px rgb(69, 139, 163)
+          max-height: 200px
+          overflow: hidden
+          tr
+            display: block
+            width: 100%
+            text-align: left
+            th
+              display: inline-block
+            .col-1
+              width: 8%
+            .col-2
+              width: 16%
+            .col-3
+              width: 24%
+          .api-response-shadow
+            width: 102%
+            height: 100%
+            overflow: auto
+            max-height: 200px
+            tr
+              display: block
+              width: 100%
+              text-align: left
+              td
+                display: inline-block
+                input
+                  background: rgba(0, 0, 0, 0)
+                  border: none
+                select
+                  background: rgba(0, 0, 0, 0)
+                  border: none
+                  outline: none
+              .col-1
+                width: 8%
+              .col-2
+                width: 16%
+              .col-3
+                width: 24%
 
 </style>
