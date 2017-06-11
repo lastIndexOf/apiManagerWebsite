@@ -1,7 +1,7 @@
 <template>
   <div id="back">
     <div class="back-wrapper" @click.stop="goBack" :style="{top: top}">
-      <i class="iconfont icon-houtui"></i>
+      <i class="iconfont icon-houtui" :style="{color: color}"></i>
     </div>
   </div>
 </template>
@@ -11,7 +11,12 @@ import router from '../../router/index'
 import { mapMutations } from 'vuex'
 
 export default {
-  props: [ 'top' ],
+  props: {
+    top: {},
+    color: {
+      default: '#333'
+    }
+  },
   methods: {
     ...mapMutations([
       'back',

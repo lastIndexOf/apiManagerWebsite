@@ -148,8 +148,10 @@ export default {
           if (err)
             console.error(err)
           else {
-            if (JSON.parse(res.text).result === 1)
+            if (JSON.parse(res.text).result === 1) {
+              this.cancelBlur()
               window.location.href = '/'
+            }
           }
         })
     }

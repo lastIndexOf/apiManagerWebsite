@@ -30,7 +30,13 @@
       </div>
       <transition name="fade">
         <div class="text-content" v-if="showText">
-          {{ text }}
+          <h3 class="title">{{ text.title }}</h3>
+          <h4 class="m-title"><time>{{ text.time }}</time>{{ text.m_title }}</h4>
+
+          <div class="desc">
+            <p class="content">{{ text.content }}</p>
+          </div>
+          <div class="edit"><i class="iconfont icon-bianji"></i></div>
         </div>
       </transition>
     </div>
@@ -216,5 +222,7 @@ export default {
         top 36px
         transform rotateZ(-6deg)
         border-top 1px solid #ddd
+    .text-content
+      padding 24px
     // background-color rgb(250, 255, 189)
 </style>
