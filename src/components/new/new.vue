@@ -18,7 +18,7 @@
           </li>
           <li>
             <span>文档描述：</span>
-            <textarea class="intro" name="name" rows="8" cols="72" v-model="doc.docIntro"></textarea>
+            <textarea id="editor" class="intro" name="name" rows="8" cols="72"></textarea>
           </li>
           <li>
             <span>一个新的群组：</span>
@@ -35,6 +35,7 @@
             </div>
           </li>
         </ul>
+        
         <div class="ensure">
           <span class="createBtn" @click="createGroup()">创建</span>
           <i class="icon iconfont icon-plumage"></i>
@@ -51,7 +52,6 @@ import close from '../close/close'
 import swal from 'sweetalert2'
 import { mapMutations, mapState } from 'vuex'
 import request from 'superagent'
-
 
 export default {
   data() {
@@ -145,12 +145,19 @@ export default {
           confirmButtonText: '确定',
           showCancelButton: false
         }).then(() => {
-            self.showDoc = true
+          self.showDoc = true
+
+          self.$nextTick(() => {
+            self.editor = new Editor({
+              element: document.getElementById('editor'),
+            })
+            self.editor.render()
+          })
         })
       }).then(function(){
-      }, function () {
-        swal.resetDefaults()
-      })
+        }, function () {
+          swal.resetDefaults()
+        })
     },
     removeArray: function(arr, val){
       for (var i = 0; i < arr.length; i ++){
@@ -213,15 +220,15 @@ export default {
     this.showMenu()
   },
   mounted() {
-    this.createDoc();
-    var editor = new Editor()
-    editor.render()
+    this.createDoc();  
   },
   components: { close }
 }
 </script>
 
-<style lang="stylus">
+<style lang="stylus" scoped>
+body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,blockquote,th,td{line-height:1}
+
 #new
   position fixed
   top 0

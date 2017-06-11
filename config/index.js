@@ -37,6 +37,16 @@ module.exports = {
         headers: {
 
         }
+      },
+      '/chatserve': {
+        target: 'http://localhost:4040',
+        changeOrigin: true,
+        pathRewrite: {
+          '^/connect': '/chatserve/connect'
+        },
+        headers: {
+
+        }
       }
     },
     // CSS Sourcemaps off by default because relative paths are "buggy"
