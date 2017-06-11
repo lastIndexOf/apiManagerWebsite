@@ -12,7 +12,8 @@ export default new Vuex.Store({
   state: {
     isBlur: false,
     showTabs: false,
-    user: {}
+    user: {},
+    socket: {}
   },
   mutations: {
     back(state) {
@@ -42,6 +43,9 @@ export default new Vuex.Store({
     setInformation(state,[ name, job ]) {
       state.user.name = name
       state.user.job = job
+    },
+    setSocket(state, socket) {
+      state.socket = socket
     }
   },
   actions: {

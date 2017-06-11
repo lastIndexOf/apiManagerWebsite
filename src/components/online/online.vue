@@ -2,7 +2,8 @@
   <div id="online">
     <close @back="back"></close>
     <div class="online-wrapper">
-    
+      {{ message }}
+      <button type="button" @click="send">click me</button>
     </div>
   </div>
 </template>
@@ -13,16 +14,16 @@ import close from '../close/close'
 import swal from 'sweetalert2'
 import { mapMutations, mapState } from 'vuex'
 
-
 export default {
   data() {
     return {
-      
+      message: ''
     }
   },
   computed: {
     ...mapState([
-      'showTabs'
+      'showTabs',
+      'socket'
     ])
   },
   methods: {
@@ -37,14 +38,18 @@ export default {
       this.cancelBlur()
       this.$emit('cancelBlur')
       router.replace('/home')
+    },
+    send() {
+      this.socket.emit('send', 'hello, world')
     }
   },
   created() {
     this.beBlur()
     this.showMenu()
-  },
-  mounted() {
-    
+
+    this.socket.on('emit', msg => {
+      this.message += msg
+    })
   },
   components: { close }
 }

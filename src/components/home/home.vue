@@ -33,6 +33,7 @@
             <router-link to="/home/online">
               <div class="icon-wrapper" >
                 <i class="iconfont icon-zaixian"></i>
+                <span v-if="sum > 0" class="information-sum">{{ sum }}</span>
               </div>
             </router-link>
           </li>
@@ -72,6 +73,7 @@
           <router-link to="/home/online">
             <div class="icon-wrapper">
               <i class="iconfont icon-zaixian"></i>
+              <span v-if="sum > 0" class="information-sum">{{ sum }}</span>
             </div>
             <p class="desc">在线通讯</p>
           </router-link>
@@ -85,23 +87,27 @@
 </template>
 <script>
 import homeheader from '../homeHeader/homeHeader'
-import { mapState, mapActions } from 'vuex'
+import { mapState, mapActions, mapMutations } from 'vuex'
+import io from 'socket.io-client'
 
 export default {
   data() {
     return {
-      isActive: false
+      isActive: false,
+      sum: 99
     }
   },
   computed: {
     ...mapState([
       'isBlur',
-      'showTabs'
+      'showTabs',
+      'socket'
     ])
   },
   methods: {
-    ...mapActions([
-      'cancelBlur'
+    ...mapMutations([
+      'cancelBlur',
+      'setSocket'
     ]),
     openTab() {
       this.isActive = true
@@ -109,6 +115,9 @@ export default {
     closeTab() {
       this.isActive = false
     }
+  },
+  created() {
+    this.setSocket(io('http://localhost:4040'))
   },
   components: { homeheader }
 }
@@ -148,6 +157,7 @@ export default {
           text-align center
           padding 20px
           .icon-wrapper
+            position relative
             display table-cell
             width 80px
             height 80px
@@ -158,6 +168,14 @@ export default {
             cursor pointer
             transition transform .2s 
             z-index 9999
+            .information-sum
+              position absolute
+              right 0
+              top -12px
+              border-radius 12px
+              background-color red
+              padding 2px 8px
+              font-size 12px
             &:hover
               transform scale(1.2)
               & + .desc
@@ -215,6 +233,7 @@ export default {
         &:last-of-type
           margin-right 0
         .icon-wrapper
+          position relative
           display table-cell
           width 125px
           height 125px
@@ -224,6 +243,13 @@ export default {
           vertical-align middle
           cursor pointer
           transition transform .2s 
+          .information-sum
+            position absolute
+            right 0
+            top -12px
+            border-radius 12px
+            background-color red
+            padding 4px 18px
           &:hover
             transform scale(1.2)
             & + .desc
