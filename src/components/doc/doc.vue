@@ -102,7 +102,7 @@
                 </div>
                 <div class="doc-desc">
                   <div class="doc-desc-cont">
-                    {{doc.desc}}
+                    <textarea id="editor" name="name" rows="20" cols="80">{{doc.desc}}</textarea>
                   </div>
                 </div>
               </div>
@@ -188,7 +188,7 @@
                     </select></td>
                     <td class="col-2"><input type="text" name="" value="" v-model="values" style="max-width: 150px"></td>
                     <td class="col-3"><input type="text" name="" value="" v-model="request.desc"></td>
-                    <td class="col-2" @click="removeRequest(index)">删除</td>
+                    <td class="col-2"><span  @click="removeRequest(index)">删除</span></td>
                   </tr>
                 </div>
               </div>
@@ -214,7 +214,7 @@
                     </select></td>
                     <td class="col-2"><input type="text" name="" value="" v-model="values" style="max-width: 150px"></td>
                     <td class="col-3"><input type="text" name="" value="" v-model="response.desc"></td>
-                    <td class="col-2" @click="removeResponse(index)">删除</td>
+                    <td class="col-2"><span @click="removeResponse(index)">删除</span></td>
                   </tr>
                 </div>
               </div>
@@ -306,7 +306,7 @@ export default {
           responsed: true,
           type: 0,
           values: [],
-          desc: "这是个测试参数"
+          desc: "这是个测试返回参数"
         }
       ],
       showApiResponse: true
@@ -375,7 +375,13 @@ export default {
     this.showMenu()
   },
   mounted() {
-
+    var self = this
+    self.$nextTick(() => {
+      self.editor = new Editor({
+        element: document.getElementById('editor'),
+      })
+      self.editor.render()
+    })
   },
   components: { close }
 }
@@ -479,13 +485,15 @@ export default {
         margin: 30px auto 0
         padding: 5px
         text-align: right
+        float: right
+        z-index: 999
         span
           font-size: 20px
           cursor: pointer
       .api-cont
-        width: 90%
-        height: 85%
-        margin: 15px auto
+        width: 100%
+        height: 100%
+        margin: 0px auto
         position: relative
         .head
           width: 10%
@@ -504,12 +512,13 @@ export default {
           bottom: 0
           font-weight: bold
           font-size: 16px
-          background: white
+          background: rgba(0, 0, 0, 0)
           li
             padding: 5px 0
             border: 1px solid rgb(184, 184, 184)
             cursor: pointer
             border-radius: 5px
+            background: rgb(236, 221, 123)
           .active
             border-right: none
             box-shadow: 0 0 5px rgb(189, 189, 189)
@@ -536,7 +545,6 @@ export default {
                 font-weight: bold
                 line-height: 60px
                 padding: 10px
-                border: 1px solid rgb(185, 185, 185)
                 text-align: left
                 i
                   font-size: 22px
@@ -648,6 +656,9 @@ export default {
                   width: 101%
                   height: 200px
                   overflow: auto
+                  textarea
+                    width: 100%
+                    height: 200px
             .doc-right
               flex: 0 0 50%
               .doc-apis
@@ -675,19 +686,16 @@ export default {
                     th
                       width: 30%
                       display: inline-block
-                      margin-left: 5px
                     td
                       width: 30%
                       display: inline-block
                       overflow: hidden
-                      margin-left: 5px
                       .apiType
                         padding: 2px
                         background-color: rgb(94, 221, 78)
                         color: #ffffff
                         border-radius: 5px
                         font-size: 13px
-                        margin-right: 3px
                   .doc-api-list
                     width: 105%
                     height: 530px

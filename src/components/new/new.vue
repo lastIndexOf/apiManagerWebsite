@@ -35,7 +35,6 @@
             </div>
           </li>
         </ul>
-        
         <div class="ensure">
           <span class="createBtn" @click="createGroup()">创建</span>
           <i class="icon iconfont icon-plumage"></i>
@@ -220,7 +219,7 @@ export default {
     this.showMenu()
   },
   mounted() {
-    this.createDoc();  
+    this.createDoc();
   },
   components: { close }
 }
