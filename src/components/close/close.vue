@@ -1,6 +1,6 @@
 <template>
   <div id="back">
-    <div class="back-wrapper" @click.stop="goBack" :style="{top: top}">
+    <div class="back-wrapper" @click.stop="goBack" :style="{top: top, left: left}">
       <i class="iconfont icon-houtui" :style="{color: color}"></i>
     </div>
   </div>
@@ -12,7 +12,12 @@ import { mapMutations } from 'vuex'
 
 export default {
   props: {
-    top: {},
+    top: {
+      default: '32px'
+    },
+    left: {
+      default: '32px'
+    },
     color: {
       default: '#333'
     }
@@ -32,6 +37,7 @@ export default {
 <style lang="stylus">
 #back
   position relative
+  z-index 99
   .back-wrapper
     position absolute
     top 64px
