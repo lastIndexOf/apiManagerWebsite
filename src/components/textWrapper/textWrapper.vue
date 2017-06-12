@@ -30,13 +30,30 @@
       </div>
       <transition name="fade">
         <div class="text-content" v-if="showText">
-          <h3 class="title">{{ text.title }}</h3>
-          <h4 class="m-title"><time>{{ text.time }}</time>{{ text.m_title }}</h4>
-
+          <h3 class="title">
+            <span class="icon">标题: </span> 
+            <input type="text" v-model="text.title" :class="{editor: isEdit}" :title="text.title" ref="title" readonly>
+          </h3>
+          <h4 class="m-title">
+            <time>修改时间: {{ text.time }}</time>
+          </h4>
+          <h4 class="m-title">
+            <span class="icon">注释: </span>
+            <input type="text"
+              v-model="text.m_title" 
+              :title="text.m_title" 
+              ref="mTitle" 
+              readonly
+              :class="{editor: isEdit}"
+              placeholder="注释信息">
+          </h4>
           <div class="desc">
-            <p class="content">{{ text.content }}</p>
+            <div class="content">
+              <textarea ref="" cols="30" rows="10" v-model="text.content" :class="{editor: isEdit}" ref="text" readonly></textarea>
+            </div>
           </div>
-          <div class="edit"><i class="iconfont icon-bianji"></i></div>
+          <div @click="editText" class="edit" title="修改" v-show="!isEdit"><i class="iconfont icon-bianji"></i></div>
+          <div @click="submitText" class="edit" title="提交" v-show="isEdit"><i class="iconfont icon-chenggong"></i></div>
         </div>
       </transition>
     </div>
@@ -81,7 +98,8 @@ export default {
       activeId: 0,
       showText: false,
       showAddText: true,
-      text: {}
+      text: {},
+      isEdit: false
     }
   },
   methods: {
@@ -90,12 +108,30 @@ export default {
 
       this.showAddText = false
       this.showText = true
+
+      this.editor = new Editor({
+        element: this.$refs.editor
+      })
+
       this.text = item
 
       this.showText = false
       this.$nextTick(() => {
         this.showText = true
       })
+    },
+    editText() {
+      this.$refs.title.readOnly = false
+      this.$refs.mTitle.readOnly = false
+      this.$refs.text.readOnly = false
+      this.isEdit = true
+      this.$refs.text.focus()
+    },
+    submitText() {
+      this.$refs.title.readOnly = true
+      this.$refs.mTitle.readOnly = true
+      this.$refs.text.readOnly = true
+      this.isEdit = false
     }
   },
   mounted() {
@@ -116,8 +152,7 @@ export default {
   width 100%
   height 100%
   font-size 0
-  .left-wrapper
-  .right-wrapper
+  .left-wrapper, .right-wrapper
     vertical-align top
     display inline-block
     width 50%
@@ -223,6 +258,68 @@ export default {
         transform rotateZ(-6deg)
         border-top 1px solid #ddd
     .text-content
-      padding 24px
+      position relative
+      text-align left
+      height 100%
+      .edit
+        position absolute
+        right -24px
+        top -24px
+        .iconfont
+          font-size 24px
+          color #666
+          cursor pointer
+      .title
+        display flex
+        flex-flow row nowrap
+        .icon
+          flex 0 0 48px
+          width 48px
+          line-height 55px
+        input
+          flex 1
+          width 100%
+          padding 4px 12px
+          border 0
+          font-size 24px
+          font-weight 700
+          cursor pointer
+          box-sizing border-box
+          &.editor
+            border-bottom 1px solid #ddd
+            cursor inherit
+      .m-title
+        display flex
+        flex-flow row nowrap
+        width 100%
+        padding-left 18px
+        .icon
+          line-height 28px
+        time
+          display inline-block
+          vertical-align top
+          line-height 28px
+        input
+          flex 1
+          display inline-block
+          border 0
+          padding 6px 6px 6px 0
+          line-height 1
+          cursor pointer
+          &.editor
+            border-bottom 1px solid #ddd
+            cursor inherit
+      .desc
+        padding 8px
+        height 90%
+        .content
+          height 90%
+          padding 12px
+          box-shadow 2px 2px 10px #ddd inset, 2px 2px 10px #ddd 
+          textarea
+            border 0  
+            width 100%
+            height 100%
+            font-size 20px
     // background-color rgb(250, 255, 189)
 </style>

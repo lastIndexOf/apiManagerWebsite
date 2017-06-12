@@ -31,6 +31,7 @@ export default {
 
 <style lang="stylus">
 #back
+  position relative
   .back-wrapper
     position absolute
     top 64px
