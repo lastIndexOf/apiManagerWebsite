@@ -1,6 +1,6 @@
 <template>
   <div id="doc">
-    <close @back="back"></close>
+    <close @back="back" top="10px"></close>
     <div class="doc-wrapper">
       <div class="container-group" v-if="!showApi">
         <div class="group-head">
@@ -480,8 +480,6 @@ export default {
     .container-api
       flex: 0 0 100%
       .back-group
-        width: 90%
-        height: 30px
         margin: 30px auto 0
         padding: 5px
         text-align: right
