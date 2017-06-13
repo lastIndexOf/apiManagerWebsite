@@ -13,7 +13,8 @@ export default new Vuex.Store({
     isBlur: false,
     showTabs: false,
     user: {},
-    socket: {}
+    socket: {},
+    groups: []
   },
   mutations: {
     back(state) {
@@ -46,6 +47,9 @@ export default new Vuex.Store({
     },
     setSocket(state, socket) {
       state.socket = socket
+    },
+    setGroups(state, groups) {
+      state.groups = groups
     }
   },
   actions: {

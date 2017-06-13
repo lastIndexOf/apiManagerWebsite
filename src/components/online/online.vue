@@ -1,6 +1,6 @@
 <template>
   <div id="online">
-    <close @back="back" color="white"></close>
+    <close @back="back" color="white" top="12px" left="16px"></close>
     <div class="online-wrapper">
       <div class="online">
         <div class="left">

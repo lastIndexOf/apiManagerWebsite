@@ -94,20 +94,23 @@ export default {
   data() {
     return {
       isActive: false,
-      sum: 99
+      sum: 0
     }
   },
   computed: {
     ...mapState([
       'isBlur',
       'showTabs',
-      'socket'
+      'socket',
+      'user',
+      'groups'
     ])
   },
   methods: {
     ...mapMutations([
       'cancelBlur',
-      'setSocket'
+      'setSocket',
+      'setGroups'
     ]),
     openTab() {
       this.isActive = true
@@ -118,6 +121,20 @@ export default {
   },
   created() {
     this.setSocket(io('http://localhost:4040'))
+
+    this.socket.emit('signin', this.user.id, this.user.logouttime)
+    this.socket.on('error', err => {
+      swal('', err, 'error')
+    })
+    this.socket.on('accept-sum', groups => {
+      for (let group of groups) {
+        this.sum += group.sum
+      }
+
+      console.log(this.groups)
+      this.setGroups(groups)
+      console.log(this.groups)
+    })
   },
   components: { homeheader }
 }

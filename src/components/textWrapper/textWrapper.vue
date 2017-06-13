@@ -2,7 +2,15 @@
   <div id="text-wrapper">
     <div class="left-wrapper">
 
-      <h2 class="title">个人备忘录 <span class="add-new-text" title="新增备忘信息"><i class="iconfont icon-xinzeng1"></i></span></h2>
+      <h2 class="title">
+        个人备忘录 
+        <span
+          class="add-new-text" 
+          title="新增备忘信息"
+          @click="addText"> 
+          <i class="iconfont icon-xinzeng1"></i>
+        </span>
+      </h2>
 
       <div class="content-wrapper">
         <div class="main-content">
@@ -32,28 +40,25 @@
         <div class="text-content" v-if="showText">
           <h3 class="title">
             <span class="icon">标题: </span> 
-            <input type="text" v-model="text.title" :class="{editor: isEdit}" :title="text.title" ref="title" readonly>
+            <input type="text" v-model="oldText.title" :title="oldText.title" ref="title" >
           </h3>
-          <h4 class="m-title">
-            <time>修改时间: {{ text.time }}</time>
+          <h4 class="m-title" v-if="submitType!=='POST'">
+            <time>修改时间: {{ oldText.time }}</time>
           </h4>
           <h4 class="m-title">
             <span class="icon">注释: </span>
             <input type="text"
-              v-model="text.m_title" 
-              :title="text.m_title" 
-              ref="mTitle" 
-              readonly
-              :class="{editor: isEdit}"
+              v-model="oldText.m_title" 
+              :title="oldText.m_title" 
+              ref="mTitle"
               placeholder="注释信息">
           </h4>
           <div class="desc">
             <div class="content">
-              <textarea ref="" cols="30" rows="10" v-model="text.content" :class="{editor: isEdit}" ref="text" readonly></textarea>
+              <textarea id="editor" v-model="oldText.content" ref="text" >{{ oldText.content }}</textarea>
             </div>
           </div>
-          <div @click="editText" class="edit" title="修改" v-show="!isEdit"><i class="iconfont icon-bianji"></i></div>
-          <div @click="submitText" class="edit" title="提交" v-show="isEdit"><i class="iconfont icon-chenggong"></i></div>
+          <div @click="editText" class="edit" title="修改"><i class="iconfont icon-bianji"></i></div>
         </div>
       </transition>
     </div>
@@ -99,39 +104,52 @@ export default {
       showText: false,
       showAddText: true,
       text: {},
-      isEdit: false
+      oldText: {},
+      submitType: 'GET'
     }
   },
   methods: {
+    addText() {
+      this.submitType = 'POST'
+
+      this.showAddText = false
+      this.showText = false
+
+      this.oldText = {}
+      this.$nextTick(() => {
+        this.showText = true
+        this.$nextTick(() => {
+          this.editor = new Editor({
+            element: document.querySelector('#editor')
+          })
+        })
+      })
+
+    },
     enterText(item) {
       this.activeId = item.id
 
+      this.submitType = 'PUT'
       this.showAddText = false
-      this.showText = true
-
-      this.editor = new Editor({
-        element: this.$refs.editor
-      })
 
       this.text = item
 
+      for (let key in item) {
+        this.oldText[key] = item[key]
+      }
       this.showText = false
       this.$nextTick(() => {
         this.showText = true
+        this.$nextTick(() => {
+          this.editor = new Editor({
+            element: document.querySelector('#editor')
+          })
+        })
       })
     },
     editText() {
-      this.$refs.title.readOnly = false
-      this.$refs.mTitle.readOnly = false
-      this.$refs.text.readOnly = false
-      this.isEdit = true
-      this.$refs.text.focus()
-    },
-    submitText() {
-      this.$refs.title.readOnly = true
-      this.$refs.mTitle.readOnly = true
-      this.$refs.text.readOnly = true
-      this.isEdit = false
+      console.log(this.oldText)
+      console.log(this.editor.codemirror.getValue())
     }
   },
   mounted() {
@@ -140,6 +158,9 @@ export default {
 }
 </script>
 <style lang="stylus">
+body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,blockquote,th,td{line-height:1}
+
+
 .fade-enter-active
   transition all .6s
   transform translate3d(0, 0, 0)
@@ -152,6 +173,8 @@ export default {
   width 100%
   height 100%
   font-size 0
+  .CodeMirror.cm-s-paper
+    max-height 100%
   .left-wrapper, .right-wrapper
     vertical-align top
     display inline-block
@@ -261,39 +284,30 @@ export default {
       position relative
       text-align left
       height 100%
-      .edit
-        position absolute
-        right -24px
-        top -24px
-        .iconfont
-          font-size 24px
-          color #666
-          cursor pointer
       .title
         display flex
         flex-flow row nowrap
         .icon
           flex 0 0 48px
           width 48px
-          line-height 55px
+          line-height 48px
         input
           flex 1
           width 100%
-          padding 4px 12px
+          padding 0 12px
           border 0
           font-size 24px
           font-weight 700
-          cursor pointer
           box-sizing border-box
-          &.editor
-            border-bottom 1px solid #ddd
-            cursor inherit
+          border-bottom 1px solid #ddd
       .m-title
         display flex
         flex-flow row nowrap
         width 100%
-        padding-left 18px
+        padding-top 12px 18px 0
         .icon
+          flex 0 0 48px
+          width 48px
           line-height 28px
         time
           display inline-block
@@ -305,10 +319,7 @@ export default {
           border 0
           padding 6px 6px 6px 0
           line-height 1
-          cursor pointer
-          &.editor
-            border-bottom 1px solid #ddd
-            cursor inherit
+          border-bottom 1px solid #ddd
       .desc
         padding 8px
         height 90%
@@ -321,5 +332,12 @@ export default {
             width 100%
             height 100%
             font-size 20px
+      .edit
+        position absolute
+        top -24px
+        right -12px
+        cursor pointer
+        .iconfont
+          font-size 24px
     // background-color rgb(250, 255, 189)
 </style>
