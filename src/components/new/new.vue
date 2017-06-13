@@ -18,7 +18,7 @@
           </li>
           <li>
             <span>文档描述：</span>
-            <textarea id="editor" class="intro" name="name" rows="8" cols="72"></textarea>
+            <textarea id="editor" class="intro" name="name" rows="8" cols="72" v-model="doc.docIntro"></textarea>
           </li>
           <li>
             <span>一个新的群组：</span>
@@ -67,7 +67,7 @@ export default {
       newGroupID: "",
       doc: {
         title: "",
-        docIntro: "",
+        docIntro: "asdasd",
       }
     }
   },
@@ -105,7 +105,6 @@ export default {
         animation: true,
         progressSteps: ['1', '2']
       })
-
       var steps = [
         {
           title: '创建文档',
@@ -168,6 +167,11 @@ export default {
     },
     createGroup: function(){
       var self = this
+      var ids = []
+      ids.push(self.user.__ob__.dep.id)
+      for(i in self.persons){
+        ids.push(self.persons[i].id)
+      }
       if (self.doc.title == ""){
         swal("文档标题不能为空哦")
       }else if(self.doc.docIntro == ""){
@@ -177,7 +181,10 @@ export default {
       }else{
         request
           .post('/apiManagerEndCode/src/group.php')
-          .send({name: self.newGroup})
+          .send({
+            name: self.newGroup,
+            ids: ids.join("+")
+          })
           .set('Accept', 'application/json')
           .end(function(err, response){
             var res = JSON.parse(response)
@@ -209,9 +216,6 @@ export default {
             }
           })
       }
-      // request
-      //   .post(/apiManagerEndCode/src/group.php)
-      //   .send()
     }
   },
   created() {

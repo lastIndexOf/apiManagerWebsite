@@ -1,6 +1,6 @@
 <template>
   <div id="doc">
-    <close @back="back" top="10px"></close>
+    <close @back="back" top="0px" left="0px"></close>
     <div class="doc-wrapper">
       <div class="container-group" v-if="!showApi">
         <div class="group-head">
@@ -9,7 +9,7 @@
         <div class="group-cont">
           <div class="group-list">
             <ul>
-              <li v-for="group in groupList">
+              <li v-for="group in groupList" @click="getDocs(group.id)">
                 <span>{{group.name}}</span>
                 <i class="icon iconfont icon-bianji"></i>
                 <i>发起人：{{group.headman}}</i>
@@ -26,9 +26,9 @@
         <div class="doc-cont">
           <div class="doc-list">
             <ul>
-              <li v-for="doc in docList">
+              <li v-for="doc,index in docList" @click="getDocInfor(doc.id,index)">
                 <span>{{doc.title}}</span>
-                <i></i>
+                <span style="float: right; margin-right: 15px">{{doc.public_time}}</span>
               </li>
             </ul>
           </div>
@@ -36,7 +36,7 @@
       </div>
       <div class="container-api" v-if="showApi">
         <div class="back-group">
-          <span @click="showApi = false">返回群组列表</span>
+          <span @click="showApi = false">返回</span>
         </div>
         <div class="api-cont">
           <div class="head"></div>
@@ -52,12 +52,12 @@
               <div class="group-left">
                 <div class="group-title">
                   <i class="icon iconfont icon-qunzu"></i>
-                  <span>{{group.title}}</span>
+                  <span>{{group.name}}</span>
                   <span style="font-size: 17px;float: right;font-weight: 400;margin-right: 10px">群组ID:{{group.id}}</span>
                 </div>
                 <div class="group-persons">
                   <div class="group-header">
-                    <span>组长： {{group.groupHeader}}</span>
+                    <span>组长： {{group.headman}}</span>
                   </div>
                   <div class="group-others">
                     <ul>
@@ -94,10 +94,10 @@
                 </div>
                 <div class="doc-type">
                   <div class="doc-type-cont1">
-                    <span>{{doc.type[0]}}</span>
+                    <span>{{docType[0]}}</span>
                   </div>
                   <div class="doc-type-cont2">
-                    <span>{{doc.type[1]}}</span>
+                    <span>{{docType[1]}}</span>
                   </div>
                 </div>
                 <div class="doc-desc">
@@ -118,7 +118,7 @@
                       <th style="width: 15%;margin-left: 5px;">操作</th>
                     </tr>
                     <div class="doc-api-list">
-                      <tr v-for="api in apis">
+                      <tr v-for="api in apis" @click="getApiInfor(api.apisid)">
                         <td>{{api.desc}}</td>
                         <td style="width: 50%;"><span class="apiType">{{api.type}}</span>{{api.url}}</td>
                         <td style="width: 15%;cursor: pointer"><span>删除</span></td>
@@ -146,13 +146,13 @@
               </div>
               <div class="api-head" type="table">
                 <tr  @click="showApiHead = !showApiHead">
-                  <th class="col-1"><i class="icon iconfont icon-zhankai1" v-if="!showApiHead"></i><i class="icon iconfont icon-shouqi" v-if="showApiHead"></i>头部</th>
+                  <th class="col-1" style="font-weight: bold"><i class="icon iconfont icon-zhankai1" v-if="!showApiHead"></i><i class="icon iconfont icon-shouqi" v-if="showApiHead"></i>头部</th>
                   <th class="col-2">标签</th>
                   <th class="col-2">内容</th>
                   <th class="col-1">操作 <i class="icon iconfont icon-xinzeng" style="float: right;font-size: 20px;" @click="addHead()"></i></th>
                 </tr>
-                <div class="api-head-shadow">
-                  <tr v-for="apihead, index in apiHeads" v-if="showApiHead">
+                <div class="api-head-shadow" v-if="showApiHead">
+                  <tr v-for="apihead, index in apiHeads">
                     <td class="col-1"><span style="margin-left: 15px">{{index+1}}</span></td>
                     <td class="col-2"><select class="" name="">
                       <option value="">Accept</option>
@@ -168,15 +168,15 @@
               </div>
               <div class="api-request">
                 <tr @click="showApiRequest = !showApiRequest">
-                  <th class="col-1"><i class="icon iconfont icon-zhankai1" v-if="!showApiRequest"></i><i class="icon iconfont icon-shouqi" v-if="showApiRequest"></i>请求</th>
+                  <th class="col-1" style="font-weight: bold"><i class="icon iconfont icon-zhankai1" v-if="!showApiRequest"></i><i class="icon iconfont icon-shouqi" v-if="showApiRequest"></i>请求</th>
                   <th class="col-2">参数</th>
                   <th class="col-2">类型</th>
                   <th class="col-2">值域</th>
                   <th class="col-3">描述</th>
                   <th class="col-2">操作 <i class="icon iconfont icon-xinzeng" style="float: right;font-size: 20px;" @click="addRequest()"></i></th>
                 </tr>
-                <div class="api-request-shadow">
-                  <tr v-for="request,index in apiRequests" v-if="showApiRequest">
+                <div class="api-request-shadow" v-if="showApiRequest">
+                  <tr v-for="request,index in apiRequests">
                     <td class="col-1">{{index+1}}<span style="padding: 0 5px;background: rgb(88, 219, 77);color:#ffffff;border-radius: 5px;margin-left: 3px" @click="request.requested = !request.requested">{{request.requested}}</span></td>
                     <td class="col-2"><input type="text" name="" value="" v-model="request.param" style="max-width: 150px"></td>
                     <td class="col-2"><select class="" name="">
@@ -194,15 +194,15 @@
               </div>
               <div class="api-response">
                 <tr @click="showApiResponse = !showApiResponse">
-                  <th class="col-1"><i class="icon iconfont icon-zhankai1" v-if="!showApiResponse"></i><i class="icon iconfont icon-shouqi" v-if="showApiResponse"></i>返回</th>
+                  <th class="col-1" style="font-weight: bold"><i class="icon iconfont icon-zhankai1" v-if="!showApiResponse"></i><i class="icon iconfont icon-shouqi" v-if="showApiResponse"></i>返回</th>
                   <th class="col-2">参数</th>
                   <th class="col-2">类型</th>
                   <th class="col-2">值域</th>
                   <th class="col-3">描述</th>
                   <th class="col-2">操作 <i class="icon iconfont icon-xinzeng" style="float: right;font-size: 20px;" @click="addResponse()"></i></th>
                 </tr>
-                <div class="api-response-shadow">
-                  <tr v-for="response,index in apiResponses" v-if="showApiResponse">
+                <div class="api-response-shadow" v-if="showApiResponse">
+                  <tr v-for="response,index in apiResponses">
                     <td class="col-1">{{index+1}}<span style="padding: 0 5px;background: rgb(88, 219, 77);color:#ffffff;border-radius: 5px;margin-left: 3px" @click="response.responsed = !response.responsed">{{response.responsed}}</span></td>
                     <td class="col-2"><input type="text" name="" value="" v-model="response.param" style="max-width: 150px"></td>
                     <td class="col-2"><select class="" name="">
@@ -231,33 +231,25 @@ import router from '../../router'
 import close from '../close/close'
 import swal from 'sweetalert2'
 import { mapMutations, mapState } from 'vuex'
+import request from 'superagent'
 
 
 export default {
   data() {
     return {
       groupList:[
-        {
-          id: 111,
-          name: "郑凡凯是..你懂得",
-          headman: "zfkss"
-        }
       ],
       docList: [
-        {
-          docsid: "",
-          title: "这是测试文档1",
-          type: "10"
-        }
+
       ],
-      showApi: true,
+      showApi: false,
       apiPage: 0,
       group: {
-        id: "11111",
-        title: "没脸没皮无敌小组",
-        groupHeader: "llx"
+        id: "",
+        title: "",
+        groupHeader: ""
       },
-      groupPersons: ["lll","lll"],
+      groupPersons: [],
       dynamics: [
         {
           content: "2017/6/22",
@@ -265,11 +257,12 @@ export default {
         }
       ],
       doc: {
-        id: "1321313212",
-        title: "这是测试文档",
-        desc: "这是文档的描述",
-        type: ["多人文档","web"]
+        id: "",
+        title: "",
+        desc: "",
+        type: ""
       },
+      docType: ["",""],
       apis: [
         {
           desc: "user增",
@@ -368,6 +361,93 @@ export default {
     removeResponse: function(index){
       var self = this
       self.apiResponses.splice(index,1)
+    },
+    getGroups: function(){
+      var self = this
+      request
+        .get("/apiManagerEndCode/src/group.php")
+        .query({
+          type: 3,
+          page: 1,
+          pagesize: 20
+        })
+        .end(function(err, response){
+          var res = JSON.parse(response)
+          if(res.result == 0){
+            swal(res.msg)
+          }else{
+            self.groupList = res.resultList
+          }
+        })
+    },
+    getDocs: function(id){
+      var self = this
+      self.group.id = id
+      request
+        .get("/apiManagerEndCode/src/docs.php")
+        .query({
+          groupid: id,
+          page: 1,
+          pagesize: 20
+        })
+        .end(function(err, response){
+          var res = JSON.parse(response)
+          if(res.result == 0){
+            swal(res.msg)
+          }else{
+            self.docList = res.resultList
+          }
+        })
+    },
+    getDocInfor: function(id, index){
+      var self = this
+      request
+        .get('/apiManagerEndCode/src/group.php')
+        .query({
+          type: 1,
+          id: self.group.id
+        })
+        .end(function(err, response){
+          var res = JSON.parse(response)
+          if(res.result == 0){
+            swal(res.msg)
+          }else{
+            self.group = res.group
+          }
+        })
+      self.doc = self.docList[index]
+      switch(self.doc){
+        case "00":
+          self.docType[0] = "单人文档"
+          self.docType[1] = "Web"
+          break
+        case "10":
+          self.docType[0] = "多人文档"
+          self.docType[1] = "Web"
+      }
+      request
+        .get('/apiManagerEndCode/src/apis.php')
+        .query({
+          docsid: id
+        })
+        .end(function(err, response){
+          var res = JSON.parse(response)
+          if(res.result == 0){
+            swal(res.msg)
+          }else{
+            self.apis = res.resultList
+            self.showApi = true
+            self.$nextTick(() => {
+              self.editor = new Editor({
+                element: document.getElementById('editor'),
+              })
+              self.editor.render()
+            })
+          }
+        })
+    },
+    getApiInfor: function(id){
+      
     }
   },
   created() {
@@ -376,12 +456,7 @@ export default {
   },
   mounted() {
     var self = this
-    self.$nextTick(() => {
-      self.editor = new Editor({
-        element: document.getElementById('editor'),
-      })
-      self.editor.render()
-    })
+    self.getGroups()
   },
   components: { close }
 }
@@ -480,10 +555,10 @@ export default {
     .container-api
       flex: 0 0 100%
       .back-group
-        margin: 30px auto 0
         padding: 5px
         text-align: right
         float: right
+        position: relative
         z-index: 999
         span
           font-size: 20px
@@ -571,7 +646,7 @@ export default {
               flex: 0 0 50%
               .group-dynamic
                 width: 90%
-                height: 94%
+                height: 90%
                 border: 1px solid rgb(185, 185, 185)
                 margin: 20px auto
                 text-align: left
@@ -619,7 +694,6 @@ export default {
                 font-weight: bold
                 line-height: 60px
                 padding: 10px
-                border: 1px solid rgb(185, 185, 185)
                 text-align: left
               .doc-type
                 width: 90%
@@ -644,24 +718,26 @@ export default {
                   line-height: 30px
               .doc-desc
                 width: 90%
-                height: 480px
+                height: 600px
                 margin: 0 auto
                 padding: 10px
                 text-align: left
                 border: 1px solid rgb(185, 185, 185)
                 overflow: hidden
                 .doc-desc-cont
-                  width: 101%
-                  height: 200px
+                  width: 106%
+                  height: 106%
                   overflow: auto
                   textarea
-                    width: 100%
-                    height: 200px
+                    width: 103%
+                    height: 100%
+                    background: rgba(0,0,0,0)
+                    border: none
             .doc-right
               flex: 0 0 50%
               .doc-apis
                 width: 95%
-                height: 94%
+                height: 90%
                 border: 1px solid rgb(185, 185, 185)
                 margin: 20px auto
                 text-align: left
@@ -674,7 +750,7 @@ export default {
                   text-align: left
                 .doc-apis-body
                   width: 90%
-                  height: 550px
+                  height: 710px
                   margin: 0 auto
                   overflow: hidden
                   tr
@@ -696,7 +772,7 @@ export default {
                         font-size: 13px
                   .doc-api-list
                     width: 105%
-                    height: 530px
+                    height: 100%
                     overflow: auto
         .api-body-api
           padding-top: 10px
@@ -706,7 +782,7 @@ export default {
             line-height: 60px
             border-bottom: 1px solid rgb(120, 120, 120)
             box-shadow: 0 0 2px rgb(69, 139, 163)
-            margin: 10px auto
+            margin: 22px auto
             .test
               display: block
               height: 55px
@@ -778,10 +854,11 @@ export default {
               .col-3
                 width: 48%
             .api-head-shadow
-              width: 102%
+              margin-top: 5px
+              width: 103%
               height: 100%
               overflow: auto
-              max-height: 150px
+              height: 130px
               tr
                 width: 100%
                 display: block
@@ -817,10 +894,11 @@ export default {
             .col-3
               width: 24%
           .api-request-shadow
-            width: 102%
+            width: 103%
             height: 100%
             overflow: auto
-            max-height: 200px
+            margin-top: 5px
+            height: 180px
             tr
               display: block
               width: 100%
@@ -861,10 +939,10 @@ export default {
             .col-3
               width: 24%
           .api-response-shadow
-            width: 102%
+            width: 103%
             height: 100%
             overflow: auto
-            max-height: 200px
+            height: 180px
             tr
               display: block
               width: 100%
