@@ -2,7 +2,7 @@
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" >
 <svg xmlns="http://www.w3.org/2000/svg">
 <metadata>
-Created by FontForge 20120731 at Mon Jun 12 09:18:29 2017
+Created by FontForge 20120731 at Tue Jun 13 16:04:31 2017
  By admin
 </metadata>
 <defs>
@@ -19,7 +19,7 @@ Created by FontForge 20120731 at Mon Jun 12 09:18:29 2017
     bbox="0 -224 1971 896"
     underline-thickness="0"
     underline-position="0"
-    unicode-range="U+0078-EBB3"
+    unicode-range="U+0078-EBB4"
   />
 <missing-glyph 
  />
@@ -80,7 +80,7 @@ t2.5 -14.5l-173 -644q-2 -7 -8.5 -11t-14.5 -1zM369 108l-30 -29q-6 -7 -14.5 -7t-14
     <glyph glyph-name="shanchu" unicode="&#xe68a;" 
 d="M936 812l-424 -424l-424 424l-88 -88l424 -424l-424 -424l88 -88l424 424l424 -424l88 88l-424 424l424 424z" />
     <glyph glyph-name="zhankai" unicode="&#xe623;" 
-d="M328 683l336 -383l-340 -388v0q-18 -21 -18 -51t18.5 -51.5t45.5 -21.5q26 0 44 21v0l384 438v0q20 22 20 53v0v0q0 31 -20 53v0l-384 439v0q-18 20 -44 20q-27 0 -45.5 -21.5t-18.5 -51.5q0 -34 22 -56z" />
+d="M328 767l336 -383l-340 -388q-18 -21 -18 -51t18.5 -51.5t45.5 -21.5q26 0 44 21v0l384 438q20 22 20 53v0v0q0 31 -20 53v0l-384 439q-18 20 -44 20q-27 0 -45.5 -21.5t-18.5 -51.5q0 -34 22 -56z" />
     <glyph glyph-name="tianjia" unicode="&#xe844;" 
 d="M961 390h-359v359h-180v-359h-359v-180h359v-359h180v359h359v180z" />
     <glyph glyph-name="tubiao105" unicode="&#xe62c;" horiz-adv-x="1025" 
@@ -149,5 +149,7 @@ d="M947 358q-9 0 -17 8t-8 18v378q0 33 -22 54.5t-55 21.5h-691q-34 0 -55.5 -21.5t-
 M845 352q0 -112 -77 -211l211 -211q19 -19 9 -36t-36 6q-3 2 -5 4q-8 11 -59.5 62.5t-98 97t-47.5 45.5q-43 -39 -102.5 -61t-121.5 -22q-88 -4 -163 39t-119 119.5t-44 167.5q0 88 44 163.5t119 119t163.5 43.5t163.5 -43.5t119 -119t44 -163.5zM518 640q-120 0 -204 -84
 t-84 -204q0 -121 84.5 -207.5t203.5 -86.5q122 0 208.5 85t86.5 209q0 119 -87 203.5t-208 84.5zM877 717h-730q-8 0 -13.5 6.5t-5.5 12.5q0 19 19 19h730q19 0 19 -19q-2 -2 -6 -7.5t-7 -8.5t-6 -3zM250 493h-103q-19 0 -19 19t19 19h103q19 0 19 -19t-19 -19zM205 282h-58
 q-19 0 -19 19t19 19h58q19 0 19 -19t-19 -19z" />
+    <glyph glyph-name="zhankai-left" unicode="&#xebb4;" 
+d="M696 1l-336 383l340 388q18 21 18 51t-18.5 51.5t-45.5 21.5q-26 0 -44 -21v0l-384 -438q-20 -22 -20 -53v0v0q0 -31 20 -53v0l384 -439q18 -20 44 -20q27 0 45.5 21.5t18.5 51.5q0 34 -22 56v0z" />
   </font>
 </defs></svg>
