@@ -18,7 +18,7 @@
           </li>
           <li>
             <span>文档描述：</span>
-            <textarea id="editor" class="intro" name="name" rows="8" cols="72" v-model="doc.docIntro"></textarea>
+            <textarea id="editor" class="intro" name="name" rows="5" cols="72" v-model="doc.docIntro"></textarea>
           </li>
           <li>
             <span>一个新的群组：</span>
@@ -184,8 +184,7 @@ export default {
           .post('/apiManagerEndCode/src/group.php')
           .send({
             name: self.newGroup,
-            // ids: ids.join("+")
-            ids: 9
+            ids: ids.join("+")
           })
           .set('Content-Type', 'application/x-www-form-urlencoded')
           .set('Accept', 'application/json')
@@ -237,8 +236,8 @@ export default {
 }
 </script>
 
-<style lang="stylus" scoped>
-body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,blockquote,th,td{line-height:1}
+<style lang="stylus">
+
 
 #new
   position fixed
@@ -268,6 +267,8 @@ body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,
       border-bottom-right-radius: 500px 30px
       border-top-right-radius: 5px 100px
       background: linear-gradient(to bottom,rgb(249, 248, 194), rgb(232, 231, 130) 70%,rgb(238, 237, 129))
+      .CodeMirror
+        height: 160px
       .head
         width: 200px
         height: 30px
