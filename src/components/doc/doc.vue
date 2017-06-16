@@ -43,7 +43,7 @@
           <div class="api-heads">
             <ul>
               <li :class="apiPage==0?'active':''" @click="apiPage = 0">群组概况</li>
-              <li :class="apiPage==1?'active':''" @click="apiPage = 1">文档信息</li>
+              <li :class="apiPage==1?'active':''" @click="gotoApiPage()">文档信息</li>
               <li :class="apiPage==2?'active':''" @click="apiPage = 2">api详情</li>
             </ul>
           </div>
@@ -75,7 +75,7 @@
                   <div class="group-dynamic-body">
                     <transition name="aslide">
                     <ul>
-                      <li v-for="commit in dynamics">
+                      <li v-for="commit in commits">
                         <i></i>
                         <span>{{commit.content}}</span>
                         <span class="commitor">{{commit.person}}</span>
@@ -94,15 +94,15 @@
                 </div>
                 <div class="doc-type">
                   <div class="doc-type-cont1">
-                    <span>{{docType[0]}}</span>
+                    <span>{{ docType[0] }}</span>
                   </div>
                   <div class="doc-type-cont2">
-                    <span>{{docType[1]}}</span>
+                    <span>{{ docType[1] }}</span>
                   </div>
                 </div>
                 <div class="doc-desc">
                   <div class="doc-desc-cont">
-                    <textarea id="editor" name="name" rows="20" cols="80">{{doc.desc}}</textarea>
+                    <textarea id="editor" name="name" rows="10" cols="80">{{ doc.desc }}</textarea>
                   </div>
                 </div>
               </div>
@@ -145,79 +145,139 @@
                 </div>
               </div>
               <div class="api-head" type="table">
-                <tr  @click="showApiHead = !showApiHead">
-                  <th class="col-1" style="font-weight: bold"><i class="icon iconfont icon-zhankai1" v-if="!showApiHead"></i><i class="icon iconfont icon-shouqi" v-if="showApiHead"></i>头部</th>
+                <tr @click="showApiHead = !showApiHead">
+                  <th class="col-1" style="font-weight: bold">
+                    <i class="icon iconfont icon-zhankai1" v-if="!showApiHead"></i>
+                    <i class="icon iconfont icon-shouqi" v-if="showApiHead"></i>
+                    头部
+                  </th>
                   <th class="col-2">标签</th>
                   <th class="col-2">内容</th>
-                  <th class="col-1">操作 <i class="icon iconfont icon-xinzeng" style="float: right;font-size: 20px;" @click="addHead()"></i></th>
+                  <th class="col-1">操作
+                    <i class="icon iconfont icon-xinzeng" style="float: right;font-size: 20px;" @click="addHead()"></i>
+                  </th>
                 </tr>
                 <div class="api-head-shadow" v-if="showApiHead">
                   <tr v-for="apihead, index in apiHeads">
                     <td class="col-1"><span style="margin-left: 15px">{{index+1}}</span></td>
-                    <td class="col-2"><select class="" name="">
-                      <option value="">Accept</option>
-                      <option value="">Accept-Charset</option>
-                      <option value="">Accept-Encoding</option>
-                      <option value="">Accept-Language</option>
-                      <option value="">Accept-Ranges</option>
+                    <td class="col-2"><select class="" name="" v-model="apihead.head">
+                      <option value="0">Accept</option>
+                      <option value="1">Accept-Charset</option>
+                      <option value="2">Accept-Encoding</option>
+                      <option value="3">Accept-Language</option>
+                      <option value="4">Accept-Ranges</option>
                     </select></td>
-                    <td class="col-2"><input type="text" name="" value=""></td>
+                    <td class="col-2"><input type="text" name="" value="" v-model="apihead.name"></td>
                     <td class="col-1"><span style="cursor: pointer" @click="removeHead(index)">删除</span></td>
                   </tr>
                 </div>
               </div>
               <div class="api-request">
                 <tr @click="showApiRequest = !showApiRequest">
-                  <th class="col-1" style="font-weight: bold"><i class="icon iconfont icon-zhankai1" v-if="!showApiRequest"></i><i class="icon iconfont icon-shouqi" v-if="showApiRequest"></i>请求</th>
-                  <th class="col-2">参数</th>
+                  <th class="col-1" style="font-weight: bold">
+                    <i class="icon iconfont icon-zhankai1" v-if="!showApiRequest"></i>
+                    <i class="icon iconfont icon-shouqi" v-if="showApiRequest"></i>请求
+                  </th>
+                  <th class="col-1">参数</th>
+                  <th class="col-1">父参</th>
                   <th class="col-2">类型</th>
-                  <th class="col-2">值域</th>
-                  <th class="col-3">描述</th>
-                  <th class="col-2">操作 <i class="icon iconfont icon-xinzeng" style="float: right;font-size: 20px;" @click="addRequest()"></i></th>
+                  <th class="col-5">描述</th>
+                  <th class="col-2">操作
+                    <i class="icon iconfont icon-xinzeng" style="float: right;font-size: 20px;" @click="addRequest()"></i>
+                  </th>
                 </tr>
                 <div class="api-request-shadow" v-if="showApiRequest">
                   <tr v-for="request,index in apiRequests">
-                    <td class="col-1">{{index+1}}<span style="padding: 0 5px;background: rgb(88, 219, 77);color:#ffffff;border-radius: 5px;margin-left: 3px" @click="request.requested = !request.requested">{{request.requested}}</span></td>
-                    <td class="col-2"><input type="text" name="" value="" v-model="request.param" style="max-width: 150px"></td>
-                    <td class="col-2"><select class="" name="">
-                      <option value="">String</option>
-                      <option value="">Number</option>
-                      <option value="">Object</option>
-                      <option value="">Array</option>
-                      <option value="">Date</option>
-                    </select></td>
-                    <td class="col-2"><input type="text" name="" value="" v-model="values" style="max-width: 150px"></td>
-                    <td class="col-3"><input type="text" name="" value="" v-model="request.desc"></td>
-                    <td class="col-2"><span  @click="removeRequest(index)">删除</span></td>
+                    <td class="col-1">{{index+1}}
+                      <span style="padding: 0 5px;background: rgb(88, 219, 77);color:#ffffff;border-radius: 5px;margin-left: 3px"
+                      @click="request.requested = !request.requested">{{request.requested}}</span>
+                    </td>
+                    <td class="col-1"><input type="text" v-model="request.key" style="max-width: 75px"></td>
+                    <td class="col-1">{{ request.parent.key }}</td>
+                    <td class="col-2">
+                      <select class="" name="" v-model="request.type">
+                        <option value="0">String</option>
+                        <option value="1">Number</option>
+                        <option value="2">Object</option>
+                        <option value="3">Array</option>
+                        <option value="4">Date</option>
+                      </select>
+                    </td>
+                    <td class="col-5"><input type="text" name="" value="" v-model="request.desc"></td>
+                    <td class="col-2">
+                      <span  @click="removeRequest(index)" style="cursor: pointer">删除</span>
+                      <i class="icon iconfont icon-tianjia"
+                          style="float: right;margin-right: 20px"
+                          @click="addChildRequest(request)"
+                          v-if="judgeType(request.type)">
+                      </i>
+                    </td>
                   </tr>
                 </div>
               </div>
               <div class="api-response">
                 <tr @click="showApiResponse = !showApiResponse">
-                  <th class="col-1" style="font-weight: bold"><i class="icon iconfont icon-zhankai1" v-if="!showApiResponse"></i><i class="icon iconfont icon-shouqi" v-if="showApiResponse"></i>返回</th>
-                  <th class="col-2">参数</th>
+                  <th class="col-1" style="font-weight: bold">
+                    <i class="icon iconfont icon-zhankai1" v-if="!showApiResponse"></i>
+                    <i class="icon iconfont icon-shouqi" v-if="showApiResponse"></i>
+                    返回
+                  </th>
+                  <th class="col-1">参数</th>
+                  <th class="col-1">父参</th>
                   <th class="col-2">类型</th>
-                  <th class="col-2">值域</th>
-                  <th class="col-3">描述</th>
-                  <th class="col-2">操作 <i class="icon iconfont icon-xinzeng" style="float: right;font-size: 20px;" @click="addResponse()"></i></th>
+                  <th class="col-5">描述</th>
+                  <th class="col-2">操作
+                    <i class="icon iconfont icon-xinzeng" style="float: right;font-size: 20px;" @click="addResponse()"></i>
+                  </th>
                 </tr>
                 <div class="api-response-shadow" v-if="showApiResponse">
                   <tr v-for="response,index in apiResponses">
-                    <td class="col-1">{{index+1}}<span style="padding: 0 5px;background: rgb(88, 219, 77);color:#ffffff;border-radius: 5px;margin-left: 3px" @click="response.responsed = !response.responsed">{{response.responsed}}</span></td>
-                    <td class="col-2"><input type="text" name="" value="" v-model="response.param" style="max-width: 150px"></td>
-                    <td class="col-2"><select class="" name="">
-                      <option value="">String</option>
-                      <option value="">Number</option>
-                      <option value="">Object</option>
-                      <option value="">Array</option>
-                      <option value="">Date</option>
+                    <td class="col-1">{{index+1}}
+                      <span style="padding: 0 5px;background: rgb(88, 219, 77);color:#ffffff;border-radius: 5px;margin-left: 3px"
+                      @click="response.responsed = !response.responsed">{{response.responsed}}</span>
+                    </td>
+                    <td class="col-1"><input type="text" name="" value="" v-model="response.key" style="max-width: 150px"></td>
+                    <td class="col-1">{{ response.parent.key }}</td>
+                    <td class="col-2"><select class="" name="" v-model="response.type">
+                      <option value="0">String</option>
+                      <option value="1">Number</option>
+                      <option value="2">Object</option>
+                      <option value="3">Array</option>
+                      <option value="4">Date</option>
                     </select></td>
-                    <td class="col-2"><input type="text" name="" value="" v-model="values" style="max-width: 150px"></td>
-                    <td class="col-3"><input type="text" name="" value="" v-model="response.desc"></td>
-                    <td class="col-2"><span @click="removeResponse(index)">删除</span></td>
+                    <td class="col-5"><input type="text" name="" value="" v-model="response.desc"></td>
+                    <td class="col-2">
+                      <span @click="removeResponse(index)">删除</span>
+                      <i class="icon iconfont icon-tianjia"
+                          style="float: right;margin-right: 20px"
+                          @click="addChildResponse(response)"
+                          v-if="judgeType(response.type)">
+                      </i>
+                    </td>
                   </tr>
                 </div>
               </div>
+              <div class="api-foot">
+                <span @click="saveParam()">保存参数</span>
+                <i class="icon iconfont icon-plumage"></i>
+              </div>
+            </div>
+            <div class="api-comment" v-if="apiPage == 1">
+              <div class="api-comment-head" @click="showCommentPanel()">
+                <i class="icon iconfont icon-zhankai-left" v-if="!showComment"></i>
+                <i class="icon iconfont icon-zhankai" v-if="showComment"></i>
+              </div>
+              <transition name="comment-slide" v-if="showComment">
+              <div class="api-comment-cont">
+                <div class="api-comment-body">
+                  <div class="comment-body-shadow">
+                  </div>
+                </div>
+                <div class="api-comment-foot">
+                  <textarea id="commentEditor" name="name" rows="8" cols="80"></textarea>
+                </div>
+              </div>
+            </transition>
             </div>
           </div>
         </div>
@@ -232,83 +292,50 @@ import close from '../close/close'
 import swal from 'sweetalert2'
 import { mapMutations, mapState } from 'vuex'
 import request from 'superagent'
-
+import Vue from 'vue'
 
 export default {
   data() {
     return {
-      groupList:[
-      ],
-      docList: [
-
-      ],
+      test: "",
+      groupList:[],
+      docList: [],
       showApi: false,
       apiPage: 0,
-      group: {
-        id: "",
-        title: "",
-        groupHeader: ""
-      },
+      group: {},
       groupPersons: [],
-      dynamics: [
+      commits: [
         {
           content: "2017/6/22",
           person: "adasda"
         }
       ],
-      doc: {
-        id: "",
-        title: "",
-        desc: "",
-        type: ""
-      },
+      doc: {},
       docType: ["",""],
-      apis: [
-        {
-          desc: "user增",
-          id: "121212",
-          type: "POST",
-          url: "/tourplace/src/user.php"
-        }
-      ],
+      apis: [],
       api: {
         desc: "user增加",
         id: "121212",
         type: "POST",
         url: "/tourplace/src/user.php"
       },
-      apiHeads:[
-        {
-          desc: "sdfsd"
-        }
-      ],
-      showApiHead: false,
-      apiRequests:[
-        {
-          param: "id",
-          requested: true,
-          type: 0,
-          values: [],
-          desc: "这是个测试参数"
-        }
-      ],
+      apiHeads:[],
+      showApiHead: true,
+      apiRequests:[],
       showApiRequest: true,
-      apiResponses:[
-        {
-          param: "id",
-          responsed: true,
-          type: 0,
-          values: [],
-          desc: "这是个测试返回参数"
-        }
-      ],
-      showApiResponse: true
+      apiResponses:[],
+      showApiResponse: true,
+      showComment: false,
+      saveProgram: 0
     }
   },
   computed: {
     ...mapState([
       'showTabs'
-    ])
+    ]),
+    saveProgram: function(){
+      alert(this.saveProgram)
+    }
   },
   methods: {
     ...mapMutations([
@@ -323,10 +350,20 @@ export default {
       this.$emit('cancelBlur')
       router.replace('/home')
     },
+    judgeType(type){
+      if(type == 2||type == 3){
+        return true
+      }else{
+        return false
+      }
+    },
     addHead: function(){
       var self = this
       self.showApiHead = false
-      self.apiHeads.push({desc: "dasda"})
+      self.apiHeads.push({
+        head: 0,
+        name: ""
+      })
     },
     removeHead: function(index){
       var self = this
@@ -336,11 +373,25 @@ export default {
       var self = this
       self.showApiRequest = false
       self.apiRequests.push({
-        param: "",
+        parent: "",
+        key: "",
         requested: true,
         type: 0,
         values: [],
-        desc: "这是个测试参数"
+        desc: "",
+        children: []
+      })
+    },
+    addChildRequest: function(param){
+      var self = this
+      self.apiRequests.push({
+        parent: param,
+        key: "",
+        requested: true,
+        type: 0,
+        values: [],
+        desc: "",
+        children: []
       })
     },
     removeRequest: function(index){
@@ -351,11 +402,25 @@ export default {
       var self = this
       self.showApiResponse = false
       self.apiResponses.push({
-        param: "",
+        parent: "",
+        key: "",
         responsed: true,
         type: 0,
         values: [],
-        desc: "这是个测试参数"
+        desc: "",
+        children: []
+      })
+    },
+    addChildResponse: function(param){
+      var self = this
+      self.apiResponses.push({
+        parent: param,
+        key: "",
+        responsed: true,
+        type: 0,
+        values: [],
+        desc: "",
+        children: []
       })
     },
     removeResponse: function(index){
@@ -371,8 +436,9 @@ export default {
           page: 1,
           pagesize: 20
         })
+        .set('Content-Type', 'application/x-www-form-urlencoded')
         .end(function(err, response){
-          var res = JSON.parse(response)
+          var res = JSON.parse(response.text)
           if(res.result == 0){
             swal(res.msg)
           }else{
@@ -390,8 +456,9 @@ export default {
           page: 1,
           pagesize: 20
         })
+        .set('Content-Type', 'application/x-www-form-urlencoded')
         .end(function(err, response){
-          var res = JSON.parse(response)
+          var res = JSON.parse(response.text)
           if(res.result == 0){
             swal(res.msg)
           }else{
@@ -407,16 +474,18 @@ export default {
           type: 1,
           id: self.group.id
         })
+        .set('Content-Type', 'application/x-www-form-urlencoded')
         .end(function(err, response){
-          var res = JSON.parse(response)
+          var res = JSON.parse(response.text)
           if(res.result == 0){
             swal(res.msg)
           }else{
             self.group = res.group
+            self.showApi = true
           }
         })
       self.doc = self.docList[index]
-      switch(self.doc){
+      switch(self.doc.type){
         case "00":
           self.docType[0] = "单人文档"
           self.docType[1] = "Web"
@@ -430,24 +499,146 @@ export default {
         .query({
           docsid: id
         })
+        .set('Content-Type', 'application/x-www-form-urlencoded')
         .end(function(err, response){
-          var res = JSON.parse(response)
+          var res = JSON.parse(response.text)
           if(res.result == 0){
             swal(res.msg)
           }else{
             self.apis = res.resultList
             self.showApi = true
-            self.$nextTick(() => {
-              self.editor = new Editor({
-                element: document.getElementById('editor'),
-              })
-              self.editor.render()
-            })
           }
         })
     },
+    gotoApiPage: function(){
+      var self = this
+      if(self.apiPage != 1){
+        self.apiPage = 1
+        this.$nextTick(() => {
+          self.editor = new Editor({
+            element: document.getElementById('editor'),
+          })
+          self.editor.render()
+        })
+      }
+    },
+    saveParam: function(){
+      var self = this
+      var heads = self.apiHeads
+      var requests = self.apiRequests
+      var responses = self.apiResponses
+      var hash = {}
+      //头部查重
+      for (var i in heads){
+        if(hash[heads[i].head]){
+          var j = Number(i) + 1
+          swal("第"+j+"行头部信息出现重复哦")
+          break
+        }else{
+          hash[heads[i].type] = true
+        }
+      }
+      //参数查重
+      if(!self.findRepeat(requests)){
+        swal("请仔细检查请求避免出现重复哦")
+      }
+      if(!self.findRepeat(responses)){
+        swal("请仔细检查响应避免出现重复哦")
+      }
+      //请求参数数据
+      var reqchildren = []
+      for (var i in requests){
+        var key = 0
+        requests[i].children = []
+        for (var index = 0; index < i; index ++){
+          if(requests[i].parent == requests[index]){
+            requests[index].children.push(requests[i])
+            key = 1
+          }
+        }
+        if(key == 0){
+          reqchildren.push(requests[i])
+        }
+      }
+      //响应参数数据
+      var reschildren = []
+      for (var i in responses){
+        var key = 0
+        responses[i].children = []
+        for (var index = 0; index < i; index ++){
+          if(responses[i].parent == responses[index]){
+            responses[index].children.push(responses[i])
+            key = 1
+          }
+        }
+        if(key == 0){
+          reschildren.push(responses[i])
+        }
+      }
+      request
+        .post('/apiManagerEndCode/src/api_info.php')
+        .send({children: reqchildren})
+        .set('Content-Type', 'application/x-www-form-urlencoded')
+        .set('Accept', 'application/json')
+        .end(function(err, response){
+          var res = JSON.parse(response.text)
+          if(res.result == 0){
+            swal(res.msg)
+          }else{
+            self.saveProgram ++
+          }
+        })
+      request
+        .post('/apiManagerEndCode/src/request_head.php')
+        .send({
+          heads: self.apiHeads
+        })
+        .set('Content-Type', 'application/x-www-form-urlencoded')
+        .set('Accept', 'application/json')
+        .end(function(err, response){
+          var res = JSON.parse(response.text)
+          if(res.result == 0){
+            swal(res.msg)
+          }else{
+            self.saveProgram ++
+          }
+        })
+      request
+        .post('/apiManagerEndCode/src/response_api.php')
+        .send({children: reschildren})
+        .set('Content-Type', 'application/x-www-form-urlencoded')
+        .set('Accept', 'application/json')
+        .end(function(err, response){
+          var res = JSON.parse(response.text)
+          if(res.result == 0){
+            swal(res.msg)
+          }else{
+            self.saveProgram ++
+          }
+        })
+    },
+    findRepeat: function(params){
+      for(var i in params){
+        for (var j = 0; j < i; j++){
+          if(params[i].key == params[j].key&&params[i].parent == params[j].parent){
+            return false
+          }
+        }
+      }
+      return true
+    },
     getApiInfor: function(id){
-      
+
+    },
+    showCommentPanel: function(){
+      var self = this
+      this.showComment = !this.showComment
+      this.$nextTick(()=>{
+        self.editor2 = new Editor({
+          element: document.getElementById('commentEditor'),
+        })
+        self.editor2.render()
+      })
     }
   },
   created() {
@@ -558,8 +749,10 @@ export default {
         padding: 5px
         text-align: right
         float: right
-        position: relative
+        position: absolute
         z-index: 999
+        bottom: 30px
+        right: 50px
         span
           font-size: 20px
           cursor: pointer
@@ -725,14 +918,14 @@ export default {
                 border: 1px solid rgb(185, 185, 185)
                 overflow: hidden
                 .doc-desc-cont
-                  width: 106%
-                  height: 106%
+                  width: 100%
+                  height: 100%
                   overflow: auto
                   textarea
-                    width: 103%
-                    height: 100%
                     background: rgba(0,0,0,0)
                     border: none
+                    width: 100%
+                    height: 100%
             .doc-right
               flex: 0 0 50%
               .doc-apis
@@ -891,8 +1084,8 @@ export default {
               width: 8%
             .col-2
               width: 16%
-            .col-3
-              width: 24%
+            .col-5
+              width: 40%
           .api-request-shadow
             width: 103%
             height: 100%
@@ -916,8 +1109,8 @@ export default {
                 width: 8%
               .col-2
                 width: 16%
-              .col-3
-                width: 24%
+              .col-5
+                width: 40%
         .api-response
           width: 90%
           margin: 10px auto
@@ -936,8 +1129,8 @@ export default {
               width: 8%
             .col-2
               width: 16%
-            .col-3
-              width: 24%
+            .col-5
+              width: 40%
           .api-response-shadow
             width: 103%
             height: 100%
@@ -960,7 +1153,64 @@ export default {
                 width: 8%
               .col-2
                 width: 16%
-              .col-3
-                width: 24%
-
+              .col-5
+                width: 40%
+        .api-comment
+          background: #ffffff
+          position: absolute
+          height: 100%
+          top: 0
+          right: 0
+          .api-comment-head
+            width: 30px
+            height: 50px
+            line-height: 50px
+            position: absolute
+            left: -30px
+            top: 50%
+            margin-top: -25px
+            border-radius: 50px 0 0 50px
+            background: rgba(0, 0, 0, .3)
+            text-indent: 5px
+            i
+              font-size: 25px
+              color: #ffffff
+          .api-comment-cont
+            width: 400px
+            height: 100%
+            box-shadow: 0 0 5px rgb(88, 88, 88) inset
+            text-align: center
+            .api-comment-body
+              width: 99%
+              height: 80%
+              margin 0 auto
+              overflow: hidden
+              .comment-body-shadow
+                width: 102%
+                height: 100%
+                overflow: auto
+                background: rgba(181, 181, 181, .5)
+            .api-comment-foot
+              width: 99%
+              height: 20%
+              margin: 0 auto
+              background: rgb(230, 167, 60)
+              .CodeMirror.cm-s-paper
+                max-height: 125px
+              textarea
+                width: 100%
+                height: 100%
+                border: none
+                background: rgb(230, 167, 60)
+                text-align: left
+      .api-foot
+        margin-top: 20px
+        width: 90%
+        text-align: right
+        span
+          cursor: pointer
+.comment-slide-enter-active, .comment-slide-leave-active
+  transition: all 0s
+.comment-slide-enter, .comment-slide-leave-active
+  right: -300px
 </style>

@@ -67,7 +67,7 @@ export default {
       newGroupID: "",
       doc: {
         title: "",
-        docIntro: "asdasd",
+        docIntro: "",
       }
     }
   },
@@ -168,41 +168,49 @@ export default {
     createGroup: function(){
       var self = this
       var ids = []
-      ids.push(self.user.__ob__.dep.id)
+      ids.push(this.user.id)
       for(i in self.persons){
         ids.push(self.persons[i].id)
       }
       if (self.doc.title == ""){
         swal("文档标题不能为空哦")
-      }else if(self.doc.docIntro == ""){
+      }else if(self.editor.codemirror.getValue() == ""){
         swal("文档描述不能为空哦")
       }else if(self.newGroup == ""){
         swal("必须为文档建立一个群组")
       }else{
+
         request
           .post('/apiManagerEndCode/src/group.php')
           .send({
             name: self.newGroup,
-            ids: ids.join("+")
+            // ids: ids.join("+")
+            ids: 9
           })
+          .set('Content-Type', 'application/x-www-form-urlencoded')
           .set('Accept', 'application/json')
           .end(function(err, response){
-            var res = JSON.parse(response)
+            var res = JSON.parse(response.text)
             if(res.result == 1){
               self.newGroupID = res.id
               request
                 .post('/apiManagerEndCode/src/docs.php')
                 .send({
-                  title: self.group.title,
-                  type: Array.join(self.docType),
-                  desc: self.group.docIntro,
+                  title: self.doc.title,
+                  type: self.docType.join(""),
+                  desc: self.editor.codemirror.getValue(),
                   groupid: self.newGroupID
                 })
+                .set('Content-Type', 'application/x-www-form-urlencoded')
                 .set('Accept', 'application/json')
                 .end(function(err, response){
-                  var res = JSON.parse(response)
+                  var res = JSON.parse(response.text)
                   if(res.result == 1){
-                    swal("创建成功")
+                    swal(
+                      '创建成功',
+                      '',
+                      'success'
+                    )
                   }else if(res.result == 0){
                     swal(res.msg)
                   }else{
