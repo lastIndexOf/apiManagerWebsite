@@ -24,7 +24,7 @@
                 <h3 class="text-title">{{ item.title }}</h3>
                 <p class="desc">
                   <time class="time">{{ item.time }}</time>
-                  <span class="m-title">{{ item.m_title }}</span>
+                  <span class="m-title">{{ item.mtitle }}</span>
                 </p>
               </div>
             </li>
@@ -48,8 +48,8 @@
           <h4 class="m-title">
             <span class="icon">注释: </span>
             <input type="text"
-              v-model="oldText.m_title" 
-              :title="oldText.m_title" 
+              v-model="oldText.mtitle" 
+              :title="oldText.mtitle" 
               ref="mTitle"
               placeholder="注释信息">
           </h4>
@@ -66,40 +66,14 @@
 </template>
 <script>
 import swal from 'sweetalert2'
+import request from 'superagent'
+import { mapState } from 'vuex'
 
 export default {
   data() {
     return {
-      data: [
-        {
-          id: 1,
-          title: '测试标题1测试标题1测试标题1测试标题1测试标题1测试标题1',
-          m_title: '测试注释1测试注释1测试注释1测试注释1测试注释1测试注释1测试注释1',
-          content: '测试内容1测试内容1测试内容1测试内容1测试内容1测试内容1',
-          time: '2017-06-09 12:15:85'
-        },
-        {
-          id: 2,
-          title: '测试标题2',
-          m_title: '测试注释2',
-          content: '测试内容2',
-          time: '2017-06-09 12:15:85'
-        },
-        {
-          id: 3,
-          title: '测试标题3',
-          m_title: '测试注释3',
-          content: '测试内容3',
-          time: '2017-06-09 12:15:85'
-        },
-        {
-          id: 4,
-          title: '测试标题4',
-          m_title: '测试注释4',
-          content: '测试内容4',
-          time: '2017-06-09 12:15:85'
-        },
-      ],
+      editType: 0,
+      data: [],
       activeId: 0,
       showText: false,
       showAddText: true,
@@ -108,13 +82,39 @@ export default {
       submitType: 'GET'
     }
   },
+  computed: {
+    ...mapState([
+      'user'
+    ])
+  },
   methods: {
+    refresh(func) {
+      this.data = []
+
+      request.get('/apiManagerEndCode/src/note.php')
+        .type('form')
+        .query({
+          type: 5,
+          page: 1,
+          pagesize: 9999
+        })
+        .end((err, res) => {
+          if (err)
+            console.error(err)
+          else {
+            this.data = JSON.parse(res.text).notes.reverse()
+
+            func && func()
+          }
+        })
+    },
     addText() {
       this.submitType = 'POST'
 
       this.showAddText = false
       this.showText = false
 
+      this.editType = 0
       this.oldText = {}
       this.$nextTick(() => {
         this.showText = true
@@ -129,6 +129,7 @@ export default {
     enterText(item) {
       this.activeId = item.id
 
+      this.editType = 1
       this.submitType = 'PUT'
       this.showAddText = false
 
@@ -149,8 +150,56 @@ export default {
     },
     editText() {
       console.log(this.oldText)
-      console.log(this.editor.codemirror.getValue())
+      if (this.editType === 0) {
+        this.editor.togglePreview()
+
+        request.post('/apiManagerEndCode/src/note.php')
+          .type('form')
+          .send({
+            userid: this.user.id,
+            content: this.editor.codemirror.getValue(),
+            title: this.oldText.title,
+            m_title: this.oldText.mtitle,
+            preview: document.querySelector('.editor-preview').innerHTML
+          })
+          .end((err, res) => {
+            if (err)
+              console.error(er)
+            else {
+              if (JSON.parse(res.text).result == 1) {
+                const self = this
+
+                this.refresh(function() {
+                  self.enterText(self.data[0])
+                })
+              }
+            }
+          })
+      } else {
+        this.editor.togglePreview()
+
+        request.put('/apiManagerEndCode/src/note.php')
+          .type('form')
+          .send({
+            id: this.oldText.id,
+            content: this.editor.codemirror.getValue(),
+            title: this.oldText.title,
+            m_title: this.oldText.mtitle,
+            preview: document.querySelector('.editor-preview').innerHTML
+          })
+          .end((err, res) => {
+            if (err)
+              console.error(err)
+            else {
+              console.log(res)
+              this.refresh()
+            }
+          })
+      }
     }
+  },
+  created() {
+    this.refresh()
   },
   mounted() {
 

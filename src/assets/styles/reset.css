@@ -21,6 +21,6 @@ button {
 * {font-family: Comic Sans MS, Monaco, arial}
 
 /* markdown 编辑器 */
-.CodeMirror.cm-s-paper { max-height: 160px }
+/*.CodeMirror.cm-s-paper { max-height: 160px }*/
 /* 布局(grids)(.g-) */ 
 /* 页面 */

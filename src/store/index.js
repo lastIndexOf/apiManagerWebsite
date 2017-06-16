@@ -50,6 +50,18 @@ export default new Vuex.Store({
     },
     setGroups(state, groups) {
       state.groups = groups
+    },
+    setGroupSum(state, id) {
+      for (let group of state.groups) {
+        if (group.id == id)
+          group.sum++
+      }
+    },
+    removeSum(state, id) {
+      for (let group of state.groups) {
+        if (group.id == id)
+          group.sum = 0
+      }
     }
   },
   actions: {
