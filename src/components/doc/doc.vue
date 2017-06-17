@@ -880,7 +880,17 @@ export default {
             document.querySelectorAll('.editor-preview')[1].innerHTML = ""
             document.querySelectorAll('.CodeMirror-code')[1].innerText = ""
             self.editor2.togglePreview()
-            self.comments.push(res.comment)
+            var newcomment= {
+              comment_id: res.comment_id,
+              content: res.content,
+              docsid: res.docsid,
+              fromuser: res.fromuser,
+              id: res.id,
+              name: res.name,
+              preview: res.preview,
+              time: res.time
+            }
+            self.comments.push(newcomment)
             self.commentto = ""
             self.floor = ""
           }
