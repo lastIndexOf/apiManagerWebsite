@@ -8,7 +8,7 @@
             <input class="username" :class="{yellow: isYellow}" type="text" placeholder="用户名/邮箱/手机号" v-model="username">
           </div>
           <div class="form-control" :class="{yellow: isYellowt}">
-            <input class="password" :class="{yellow: isYellowt}" type="password" placeholder="密码" v-model="password">
+            <input class="password" @keydown.enter="signin" :class="{yellow: isYellowt}" type="password" placeholder="密码" v-model="password">
             <span class="enter">
               <i class="iconfont icon-denglu" @click="signin" v-show="!isSigned"></i>
               <div class="loading-wrapper" v-show="isSigned">

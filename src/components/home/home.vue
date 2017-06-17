@@ -81,7 +81,7 @@
       </div>
     </section>
     <transition name="scaleIn">
-      <router-view></router-view>
+      <router-view :newMessage="newMessage"></router-view>
     </transition>
   </div>
 </template>
@@ -94,20 +94,33 @@ export default {
   data() {
     return {
       isActive: false,
-      sum: 99
+      newMessage: {}
     }
   },
   computed: {
     ...mapState([
       'isBlur',
       'showTabs',
-      'socket'
-    ])
+      'socket',
+      'user',
+      'groups'
+    ]),
+    sum() {
+      let sum = 0
+
+      for (let group of this.groups) {
+        sum += group.sum
+      }
+
+      return sum
+    }
   },
   methods: {
     ...mapMutations([
       'cancelBlur',
-      'setSocket'
+      'setSocket',
+      'setGroups',
+      'setGroupSum'
     ]),
     openTab() {
       this.isActive = true
@@ -118,6 +131,26 @@ export default {
   },
   created() {
     this.setSocket(io('http://localhost:4040'))
+
+    this.socket.emit('signin', this.user.id, this.user.logouttime)
+    this.socket.on('error', err => {
+      swal('', err, 'error')
+    })
+    this.socket.on('accept-sum', groups => {
+
+      this.setGroups(groups)
+    })
+    this.socket.on('get-new-message', result => {
+      for (let group of this.groups) {
+        if (group.id == result.group_id)
+          this.setGroupSum(group.id)
+      }
+
+      this.newMessage = result
+    })
+  },
+  destroyed() {
+    this.socket.removeAllListeners()
   },
   components: { homeheader }
 }

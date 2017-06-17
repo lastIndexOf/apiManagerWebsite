@@ -1,6 +1,6 @@
 <template>
   <div id="new">
-    <close @back="back"></close>
+    <close v-if="showDoc" @back="back" color="#000" left="28%"></close>
     <div class="new-wrapper">
       <transition name="fade">
       <div class="doc_infor" v-if="showDoc">
@@ -25,14 +25,29 @@
             <input type="text" name="" v-model="newGroup" placeholder="输入群组名称">
           </li>
           <li style="position: relative;" v-if="docType[0] == '1'&&newPage">
-            <span>群组成员：</span>
+            <span>添加群组成员：</span>
             <div class="group-person">
               <span v-for="person in persons">
                 {{person.username}}
                 <i class="icon iconfont icon-shanchu" @click="removeArray(persons, person.username)"></i>
               </span>
-              <input type="text" name="" value="" v-model="newPerson.username"  placeholder="输入项目成员，‘enter’键添加" @keydown.13="addPerson()">
+
+              <input type="text" v-model="newPerson.username" placeholder="输入项目成员，‘enter’键添加" @keydown="boundle">
+
             </div>
+            <ul class="names-wrapper" 
+              v-show="nameWrapper.length!=0">
+              <li class="name-item"
+                v-for="item of nameWrapper"
+                @click="addThinkPerson(item)">
+                <div class="avatar">
+                  <img :src="item.avatar">
+                </div>
+                <div class="username">
+                  {{ item.username }} <span class="name">{{ item.name }}</span>
+                </div>
+              </li>
+            </ul>
           </li>
         </ul>
         <div class="ensure">
@@ -56,6 +71,7 @@ import request from 'superagent'
 export default {
   data() {
     return {
+      nameWrapper: [],
       docType: ["0","0"],
       resultName: ["单人文档","web"],
       showDoc: false,
@@ -87,6 +103,38 @@ export default {
       'notShowMenu',
       'cancelBlur'
     ]),
+    boundle(e, timer = 500) {
+      clearTimeout(this.timer)
+
+      this.timer = setTimeout(() => {
+        this.addThinkPerson()
+      }, timer)
+    },
+    addThinkPerson(item) {
+      if (this.xhr) {
+        this.xhr.abort()
+      }
+
+      this.xhr = request.get('/apiManagerEndCode/src/group.php')
+        .type('form')
+        .query({
+          type: 5,
+          name: this.newPerson.username
+        })
+        .end((err, res) => {
+          if (err)
+            console.error(err)
+          else {
+            this.nameWrapper = []
+            
+            const result = JSON.parse(res.text)
+            if (result.result == 1)
+              this.nameWrapper = JSON.parse(res.text).resultList
+          }
+        })
+      // this.newPerson.username = item.username 
+      // this.addPerson()
+    },
     back(e) {
       this.notShowMenu()
       this.cancelBlur()
@@ -111,10 +159,12 @@ export default {
         input: 'select',
         confirmButtonText: '下一步 &rarr;',
         showCancelButton: true,
+        allowOutsideClick: false,
         animation: true,
         progressSteps: ['1', '2'],
         allowOutsideClick: false
       })
+      
       var steps = [
         {
           title: '创建文档',
@@ -132,40 +182,53 @@ export default {
           }
         }
       ]
-      swal.queue(steps).then(function (result) {
-        swal.resetDefaults()
-        self.docType = result
-        if(result[0] == 0){
-          self.resultName[0] = "单人文档"
-        }else{
-          self.resultName[0] = "多人文档"
-        }
-        switch(result[1]){
-          case "0": self.resultName[1] = "web";
-          default: break;
-        }
-        swal({
-          title: '创建成功',
-          html:
-            '你的文档类型: <pre>' +
-              JSON.stringify(self.resultName) +
-            '</pre>',
-          confirmButtonText: '确定',
-          showCancelButton: false
-        }).then(() => {
-          self.showDoc = true
+      swal.queue(steps)
+        .then(function (result) {
+          swal.resetDefaults()
+          self.docType = result
+          if(result[0] == 0){
+            self.resultName[0] = "单人文档"
+          }else{
+            self.resultName[0] = "多人文档"
+          }
+          switch(result[1]){
+            case "0": self.resultName[1] = "web";
+            default: break;
+          }
+          swal({
+            title: '创建成功',
+            html:
+              '你的文档类型: <pre>' +
+                JSON.stringify(self.resultName) +
+              '</pre>',
+            confirmButtonText: '确定',
+            showCancelButton: false
+          }).then(() => {
+            self.showDoc = true
 
-          self.$nextTick(() => {
-            self.editor = new Editor({
-              element: document.getElementById('editor'),
+            self.$nextTick(() => {
+              self.editor = new Editor({
+                element: document.getElementById('editor'),
+              })
+              self.editor.render()
             })
-            self.editor.render()
+          }).catch(() => {
+            self.showDoc = true
+
+            self.$nextTick(() => {
+              self.editor = new Editor({
+                element: document.getElementById('editor'),
+              })
+              self.editor.render()
+            })
           })
         })
-      }).then(function(){
-        }, function () {
+        .then(function(){}, function () {
+          self.cancelBlur()
+          router.replace('/home')
           swal.resetDefaults()
         })
+        
     },
     removeArray: function(arr, val){
       for (var i = 0; i < arr.length; i ++){
@@ -271,6 +334,8 @@ export default {
   created() {
     this.beBlur()
     this.showMenu()
+    this.start = Date.now()
+    this.tiemr = null
   },
   mounted() {
     var id = this.$route.query.id
@@ -300,6 +365,10 @@ export default {
 <style lang="stylus">
 
 
+.CodeMirror.cm-s-paper
+  max-height 160px
+
+
 #new
   position fixed
   top 0
@@ -308,12 +377,14 @@ export default {
   right 156px
   padding 24px
   padding-top 56px
+  .editor-statusbar
+    display none
   .new-wrapper
     width 100%
     height 100%
     box-sizing border-box
-    background-color #fff
-    box-shadow 10px 10px 10px rgba(7, 17 ,27, .5)
+    background-color rgba(0, 0, 0, 0)
+    // box-shadow 10px 10px 10px rgba(7, 17 ,27, .5)
     padding-top: 20px
     .doc_infor
       position: relative
@@ -327,7 +398,7 @@ export default {
       border-bottom-left-radius: 20px 500px
       border-bottom-right-radius: 500px 30px
       border-top-right-radius: 5px 100px
-      background: linear-gradient(to bottom,rgb(249, 248, 194), rgb(232, 231, 130) 70%,rgb(238, 237, 129))
+      background: rgb(250, 250, 250)
       .CodeMirror
         height: 160px
       .head
@@ -350,6 +421,36 @@ export default {
           width: 100%
           text-align: left
           margin-top: 20px
+          cursor pointer
+          .names-wrapper
+            position absolute
+            width 100%
+            max-height 120px
+            overflow auto
+            .name-item
+              display flex
+              flex-flow row wrap
+              padding-top 5px
+              &:hover
+                background-color #0366d6
+                color #fff
+                .username
+                  .name
+                    color #fff
+              .avatar
+                flex 0 0 30px
+                width 30px
+                img
+                  width 30px
+                  height 30px
+              .username
+                flex 1
+                padding-left 12px
+                line-height 33px
+                .name
+                  display inline-block
+                  font-size 12px
+                  color #666
           span
             display: block
           input
@@ -357,27 +458,31 @@ export default {
             width: 100%
             height: 30px
             margin-top: 10px
-            border-radius: 5px
-            border: 1px solid rgb(122, 135, 172)
+            border 0
+            border-bottom 1px solid rgb(122, 135, 172)
             color: rgb(157, 157, 157)
             background-color: rgba(249, 248, 194,0)
             text-indent: 5px
           .group_num
-            width: 30%
+            cursor pointer
             display: inline-block
-            padding: 5px
+            padding: 4px
             border: 1px solid rgb(122, 135, 172)
             margin-top: 10px
             border-radius: 5px
-            color: rgb(157, 157, 157)
+            font-size 12px
+            background-color #f1f8ff
+            color: #0366d6
           .doc_type
-            width: 30%
+            cursor pointer
             display: inline-block
-            padding: 5px
-            margin-left: 20px
+            padding: 4px 12px
+            font-size 12px
+            margin-left: 4px
+            background-color #f1f8ff
             border: 1px solid rgb(122, 135, 172)
             border-radius: 5px
-            color: rgb(157, 157, 157)
+            color: #0366d6
           .intro
             margin-top: 10px
             border: 1px solid rgb(122, 135, 172)
@@ -411,6 +516,7 @@ export default {
               border: none
               color: rgb(157, 157, 157)
       .ensure
+        display inline-block
         margin-top: 70px
         transform: translateX(230px)
         .createBtn

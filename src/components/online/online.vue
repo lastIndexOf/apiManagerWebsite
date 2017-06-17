@@ -1,6 +1,6 @@
 <template>
   <div id="online">
-    <close @back="back" color="white"></close>
+    <close @back="back" color="white" top="12px" left="16px"></close>
     <div class="online-wrapper">
       <div class="online">
         <div class="left">
@@ -21,9 +21,9 @@
           <div class="group-wrapper">
             <transition-group name="group" tag="ul" class="groups">
               <li class="group" 
-                v-for="(group, i) of groups" 
-                @click="select(i)" 
-                :class="{active: indexPage==i}"
+                v-for="group of groups" 
+                @click="select(group)" 
+                :class="{active: indexPage==group.id}"
                 :key="group.name"
                 v-show="group.name.indexOf(searchKey) !== -1"> 
                 <div class="img-wrapper">
@@ -32,7 +32,7 @@
                 <div class="name-wrapper">
                   <p class="name">{{ group.name }}</p>
                 </div>
-                <div class="chat-sum">{{ group.sum }}</div>
+                <div class="chat-sum" v-show="group.sum > 0">{{ group.sum }}</div>
               </li>
             </transition-group>
           </div>
@@ -40,6 +40,30 @@
         <div class="right">
           <div class="nothing-wrapper" v-if="indexPage === -1">
             请点击群组查看通讯详情
+          </div>
+          <div class="chat-content-wrapper" v-if="indexPage !== -1">
+            <div class="top-wrapper" ref="topWrapper">
+              <ul class="message-wrapper">
+                <li class="message" :class="{mine: info.user.id == user.id}" v-for="info of infos">
+                  <div class="time-wrapper">
+                    <div class="time">{{ info.time | filterTime }}</div>
+                  </div>
+                  <div class="chat-content-wrapper">
+                    <div class="avatar">
+                      <img :src="info.user.avatar" :title="info.user.name + ' ' + info.user.job ">
+                    </div>
+                    <div class="content">
+                      <div class="main">
+                        {{ info.content }}
+                      </div>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="footer-wrapper">
+              <textarea placeholder="按ctrl+Enter发送消息" @keydown.ctrl.enter.stop.prevent="sendText" v-model="message"></textarea>
+            </div>
           </div>
         </div>
       </div>
@@ -52,6 +76,7 @@ import router from '../../router'
 import close from '../close/close'
 import swal from 'sweetalert2'
 import { mapMutations, mapState } from 'vuex'
+import moment from 'moment'
 
 export default {
   data() {
@@ -59,33 +84,16 @@ export default {
       indexPage: -1,
       message: '',
       searchKey: '',
-      groups: [
-        {
-          id: 1,
-          name: '日韩xx交流小组',
-          headman: 1,
-          sum: 48
-        },
-        {
-          id: 2,
-          name: '日韩xx交流小组2',
-          headman: 2,
-          sum: '99+'
-        },
-        {
-          id: 3,
-          name: '日韩xx交流小组3',
-          headman: 3,
-          sum: 77
-        }
-      ]
+      infos: []
     }
   },
+  props: [ 'newMessage' ],
   computed: {
     ...mapState([
       'showTabs',
       'socket',
-      'user'
+      'user',
+      'groups'
     ])
   },
   methods: {
@@ -93,29 +101,85 @@ export default {
       'beBlur',
       'showMenu',
       'notShowMenu',
-      'cancelBlur'
+      'cancelBlur',
+      'removeSum'
     ]),
-    select(index) {
-      this.indexPage = index
+    sendText() {
+      if (!this.message) return swal('', '请不要输入空信息', 'error') 
 
+      this.socket.emit('create-new-message', this.message, this.indexPage)
+    },
+    select(group) {
+      if (this.indexPage === group.id) return
+
+      this.indexPage = group.id
+
+      group.sum = 0
+      group.page = 1
+      this.infos = []
+
+      this.socket.emit('get-message', this.indexPage, group.page)
     },
     back(e) {
       this.notShowMenu()
       this.cancelBlur()
       this.$emit('cancelBlur')
       router.replace('/home')
-    },
-    send() {
-      this.socket.emit('send', 'hello, world')
+    }
+  },
+  watch: {
+    newMessage(n, old) {
+      if (n.group_id === this.indexPage) {
+        this.infos.push(n)
+        this.$nextTick(() => {
+          this.$refs.topWrapper.scrollTop = 99999
+        })
+      }
+      if (n.group_id === this.indexPage) {
+        this.removeSum()
+      }
     }
   },
   created() {
     this.beBlur()
     this.showMenu()
 
-    this.socket.on('emit', msg => {
-      this.message += msg
-    })
+    this.sendMessage = result => {
+      this.infos = result
+      this.$nextTick(() => {
+        this.$refs.topWrapper.scrollTop = 99999 
+      }) 
+    }
+
+    this.created = result => {
+      if (result.code == 200) {
+        this.infos.push({
+          content: this.message,
+          user: this.user,
+          time: Date.now(),
+          user_id: this.user.id,
+          group_id: this.indexPage
+        })
+        this.message = ''
+        this.$nextTick(() => {
+          this.$refs.topWrapper.scrollTop = 99999 
+        })
+      } else {
+        swal('', result.msg, 'error')
+      }
+    }
+
+    this.socket.on('send-message', this.sendMessage)
+    this.socket.on('created', this.created)
+  },
+  destroyed() {
+    this.socket.removeListener('send-message', this.sendMessage)
+    this.socket.removeListener('created', this.created)
+  },
+  filters: {
+    filterTime(val) {
+      return moment(val).format('YYYY-MM-DD HH:mm')
+    }
   },
   components: { close }
 }
@@ -177,6 +241,7 @@ export default {
                 line-height 20px
                 border-radius 50%
                 padding 6px
+                text-align center
                 box-sizing border-box
                 background-color #fa3140
               .img-wrapper
@@ -217,6 +282,85 @@ export default {
       .right
         flex 1
         position relative
+        .chat-content-wrapper
+          height 100%
+          .top-wrapper
+            height 70%
+            overflow auto
+            background-color rgb(238, 238, 238)
+            .message-wrapper
+              .message
+                width 100%
+                padding 12px 24px
+                min-height 150px
+                box-sizing border-box
+                .time-wrapper
+                  display inline-block
+                  color #fff
+                  text-align center
+                  padding 2px 12px
+                  background-color rgb(220, 220, 220)
+                .chat-content-wrapper
+                  padding-top 12px
+                  display flex
+                  flex-flow row nowrap
+                  .avatar
+                    flex 0 0 80px
+                    width 80px
+                    text-align left
+                    img
+                      width 60px
+                      height 60px
+                      cursor pointer
+                  .content
+                    flex 1
+                    text-align left
+                    .main
+                      position relative
+                      display inline-block
+                      padding 6px 12px
+                      min-height 24px
+                      font-size 18px
+                      line-height 24px
+                      border-radius 6px
+                      background-color rgb(250, 250, 250)
+                      &::after
+                        content ''
+                        position absolute
+                        left -20px
+                        top 10px
+                        height 0
+                        width 0
+                        border 10px solid transparent
+                        border-right 10px solid rgb(250, 250, 250)
+                &.mine
+                  .chat-content-wrapper
+                    flex-flow row-reverse nowrap
+                    .avatar
+                      text-align right
+                    .content
+                      text-align right
+                      .main
+                        position relative
+                        background-color rgb(178, 226, 129)
+                        &::after
+                          content ''
+                          position absolute
+                          left inherit
+                          right -20px
+                          top 10px
+                          height 0
+                          width 0
+                          border 10px solid transparent
+                          border-left 10px solid rgb(178, 226, 129)
+          .footer-wrapper
+            height 30%
+            padding 12px
+            box-sizing border-box
+            textarea
+              border 0
+              width 100%
+              height 100%
         .nothing-wrapper
           position absolute
           top 50%

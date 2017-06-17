@@ -13,7 +13,7 @@ import '../node_modules/sweetalert2/dist/sweetalert2.min.css'
 import './assets/styles/fonts/iconfont.css'
 import 'animate.css'
 
-// import '../src/assets/styles/editor.css'
+import './assets/styles/editor.css'
 
 /* eslint-disable no-new */
 new Vue({
