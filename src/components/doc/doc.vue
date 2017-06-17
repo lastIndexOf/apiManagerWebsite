@@ -9,7 +9,7 @@
         <div class="group-cont">
           <div class="group-list">
             <ul>
-              <li v-for="group in groupList" @click="getDocs(group.id)">
+              <li v-for="group in groupList" @click="getDocs(group.id, group.name)">
                 <span>{{group.name}}</span>
                 <i class="icon iconfont icon-bianji"></i>
                 <i>发起人：{{group.headman}}</i>
@@ -21,7 +21,7 @@
       <div class="container-doc" v-if="!showApi">
         <div class="doc-head">
           <span>文档列表</span>
-          <i class="icon iconfont icon-tianjia" @click=""></i>
+          <i class="icon iconfont icon-tianjia" @click="createDoc()"></i>
         </div>
         <div class="doc-cont">
           <div class="doc-list">
@@ -42,7 +42,7 @@
           <div class="head"></div>
           <div class="api-heads">
             <ul>
-              <li :class="apiPage==0?'active':''" @click="apiPage = 0">群组概况</li>
+              <li :class="apiPage==0?'active':''" @click="apiPage = 0; getCommit(1)">群组概况</li>
               <li :class="apiPage==1?'active':''" @click="gotoApiPage()">文档信息</li>
               <li :class="apiPage==2?'active':''" @click="apiPage = 2">api详情</li>
             </ul>
@@ -78,7 +78,8 @@
                       <li v-for="commit in commits">
                         <i></i>
                         <span>{{commit.content}}</span>
-                        <span class="commitor">{{commit.person}}</span>
+                        <span style="margin-left: 10px">{{commit.name}}</span>
+                        <span class="commitor">{{commit.time}}</span>
                       </li>
                     </ul>
                   </transition>
@@ -134,7 +135,7 @@
                 </div>
               </div>
             </div>
-            <div class="api-body-api api-infor" v-if="apiPage == 2">
+            <div class="api-body-api api-infor" v-if="apiPage == 2 && activeapi">
               <div class="api-title">
                 <span class="test">测试</span>
                 <div class="api-title-cont">
@@ -269,6 +270,9 @@
                 <i class="icon iconfont icon-plumage"></i>
               </div>
             </div>
+            <div v-if="apiPage == 2 && !activeapi">
+              <p style="padding-top: 100px;font-size: 20px">请先在文档信息页面选择接口（API）</p>
+            </div>
             <div class="api-comment" v-if="apiPage == 1">
               <div class="api-comment-head" @click="showCommentPanel()">
                 <i class="icon iconfont icon-zhankai-left" v-if="!showComment"></i>
@@ -290,7 +294,6 @@
                         <div class="comment-content" v-html="comment.preview">
                         </div>
                         <div class="comment-foot">
-
                         </div>
                       </li>
                     </ul>
@@ -364,12 +367,7 @@ export default {
       apiPage: 0,
       group: {},
       groupPersons: [],
-      commits: [
-        {
-          content: "2017/6/22",
-          person: "adasda"
-        }
-      ],
+      commits: [],
       doc: {},
       docType: ["",""],
       apis: [],
@@ -396,6 +394,7 @@ export default {
       commentto: "",
       comments: [],
       floor: '',
+      activeapi: false
     }
   },
   computed: {
@@ -422,6 +421,9 @@ export default {
       }else{
         return false
       }
+    },
+    createDoc: function(){
+      window.location = "/localhost:8080/#/home/new?id=" + this.group.id + "&name=" + this.group.name
     },
     addHead: function(){
       var self = this
@@ -566,9 +568,10 @@ export default {
           }
         })
     },
-    getDocs: function(id){
+    getDocs: function(id, name){
       var self = this
       self.group.id = id
+      self.group.name = name
       request
         .get("/apiManagerEndCode/src/docs.php")
         .query({
@@ -629,6 +632,7 @@ export default {
             self.showApi = true
           }
         })
+        self.getCommit(1)
     },
     gotoApiPage: function(){
       var self = this
@@ -643,6 +647,24 @@ export default {
         })
         self.getComment(1)
       }
+    },
+    getCommit(page){
+      var self = this
+      request
+        .get('/apiManagerEndCode/src/commit.php')
+        .query({
+          docsid: self.doc.id,
+          page: page,
+          pagesize: 20
+        })
+        .end(function(err, response){
+          var res = JSON.parse(response.text)
+          if(res.result == 0){
+            swal(err.msg)
+          }else{
+            self.commits = res.resultList
+          }
+        })
     },
     getComment: function(page){
       var self = this
@@ -721,50 +743,83 @@ export default {
             reschildren.push(responses[i])
           }
         }
-        request
-          .post('/apiManagerEndCode/src/request_head.php')
-          .send({
-            heads: JSON.stringify(self.apiHeads)
-          })
-          .set('Content-Type', 'application/x-www-form-urlencoded')
-          .set('Accept', 'application/json')
-          .end(function(err, response){
-            var res = JSON.parse(response.text)
-            if(res.result == 0){
-              swal(res.msg)
-            }else{
-            }
-          })
-        request
-          .post('/apiManagerEndCode/src/api_info.php')
-          .send({
-            children: JSON.stringify(reqchildren)
-          })
-          .set('Content-Type', 'application/x-www-form-urlencoded')
-          .set('Accept', 'application/json')
-          .end(function(err, response){
-            var res = JSON.parse(response.text)
-            if(res.result == 0){
-              swal(res.msg)
-            }else{
-            }
-          })
-        request
-          .post('/apiManagerEndCode/src/response_api.php')
-          .send({
-            children: JSON.stringify(reschildren)
-          })
-          .set('Content-Type', 'application/x-www-form-urlencoded')
-          .set('Accept', 'application/json')
-          .end(function(err, response){
-            var res = JSON.parse(response.text)
-            if(res.result == 0){
-              swal(res.msg)
-            }else{
-            }
-          })
+        swal({
+          title: '提交一份修改信息',
+          input: 'text',
+          showCancelButton: true,
+          confirmButtonText: '确定',
+          showLoaderOnConfirm: true,
+          preConfirm: function (text) {
+            return new Promise(function (resolve, reject) {
+              setTimeout(function() {
+                if (text != '') {
+                  request
+                    .post('/apiManagerEndCode/src/request_head.php')
+                    .send({
+                      heads: JSON.stringify(self.apiHeads)
+                    })
+                    .set('Content-Type', 'application/x-www-form-urlencoded')
+                    .set('Accept', 'application/json')
+                    .end(function(err, response){
+                      var res = JSON.parse(response.text)
+                      if(res.result == 0){
+                        swal(res.msg)
+                      }else{
+                      }
+                    })
+                  request
+                    .post('/apiManagerEndCode/src/api_info.php')
+                    .send({
+                      children: JSON.stringify(reqchildren)
+                    })
+                    .set('Content-Type', 'application/x-www-form-urlencoded')
+                    .set('Accept', 'application/json')
+                    .end(function(err, response){
+                      var res = JSON.parse(response.text)
+                      if(res.result == 0){
+                        swal(res.msg)
+                      }else{
+                      }
+                    })
+                  request
+                    .post('/apiManagerEndCode/src/response_api.php')
+                    .send({
+                      children: JSON.stringify(reschildren)
+                    })
+                    .set('Content-Type', 'application/x-www-form-urlencoded')
+                    .set('Accept', 'application/json')
+                    .end(function(err, response){
+                      var res = JSON.parse(response.text)
+                      if(res.result == 0){
+                        swal(res.msg)
+                      }else{
+                      }
+                    })
+                  request
+                    .post('/apiManagerEndCode/src/commit.php')
+                    .send({
+                      docsid: self.doc.id,
+                    	userid: self.user.id,
+                    	content: text
+                    })
+                    .set('Content-Type', 'application/x-www-form-urlencoded')
+                    .end(function(err, response){
+                      var res = JSON.parse(response.text)
+                      if(res.result == 0){
+                        swal(res.msg)
+                      }else{
+                        swal("修改成功")
+                      }
+                    })
+                } else {
+                  resolve()
+                }
+              }, 2000)
+            })
+          },
+          allowOutsideClick: false
+        })
       }
-
     },
     findRepeat: function(params){
       for(var i in params){
@@ -819,6 +874,7 @@ export default {
       var self = this
       self.apiPage = 2
       self.api = self.apis[index]
+      self.activeapi =true
       request
         .get('/apiManagerEndCode/src/api_info.php')
         .query({
@@ -1459,43 +1515,45 @@ export default {
               .comment-body-shadow
                 width: 102%
                 height: 100%
-                overflow: auto
+                overflow-y: auto
+                overflow-x: hidden
                 background: rgba(181, 181, 181, .5)
-                li
-                  width: 96%
-                  margin: 20px auto
-                  .comment-head
-                    width: 100%
-                    text-align: left
-                    width: 100%
-                    i
-                      width: 40px
-                      height: 40px
-                      border-radius: 20px
-                      background: #fa3140
-                      color: #ffffff
-                      display: inline-block
-                      line-height: 40px
-                      text-align: center
-                      float: left
-                    ul
+                ul
+                  width: 100%
+                  li
+                    width: 96%
+                    margin: 20px auto
+                    .comment-head
+                      width: 100%
+                      text-align: left
+                      width: 100%
+                      i
+                        width: 40px
+                        height: 40px
+                        border-radius: 20px
+                        background: #fa3140
+                        color: #ffffff
+                        display: inline-block
+                        line-height: 40px
+                        text-align: center
+                        float: left
+                      ul
+                        margin-left: 20px
+                        background: rgb(230, 230, 230)
+                        height: 40px
+                        li
+                          margin: 0
+                          margin-left: 30px
+                    .comment-content
+                      width: 90%
                       margin-left: 20px
-                      background: rgb(230, 230, 230)
-                      height: 40px
-                      li
-                        margin: 0
-                        margin-left: 30px
-                  .comment-content
-                    width: 90%
-                    margin-left: 20px
-                    box-shadow: 0 0 3px rgb(52, 52, 52) inset
-                    text-align: left
-                    padding: 5px 10px
+                      box-shadow: 0 0 3px rgb(52, 52, 52) inset
+                      text-align: left
+                      padding: 5px 10px
             .api-comment-foot
               width: 99%
               height: 30%
               margin: 0 auto
-              background: rgb(230, 167, 60)
               .CodeMirror.cm-s-paper
                 height: 180px
                 text-align: left
@@ -1517,7 +1575,6 @@ export default {
                 span
                   padding: 10px
                   border-radius: 10px
-                  color: #ffffff
                   cursor: pointer
       .api-foot
         margin-top: 20px
