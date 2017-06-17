@@ -9,7 +9,7 @@
         <div class="group-cont">
           <div class="group-list">
             <ul>
-              <li v-for="group in groupList" @click="getDocs(group.id)">
+              <li v-for="group in groupList" @click="getDocs(group.id, group.name)">
                 <span>{{group.name}}</span>
                 <i class="icon iconfont icon-bianji"></i>
                 <i>发起人：{{group.headman}}</i>
@@ -21,7 +21,7 @@
       <div class="container-doc" v-if="!showApi">
         <div class="doc-head">
           <span>文档列表</span>
-          <i class="icon iconfont icon-tianjia" @click=""></i>
+          <i class="icon iconfont icon-tianjia" @click="createDoc()"></i>
         </div>
         <div class="doc-cont">
           <div class="doc-list">
@@ -42,12 +42,13 @@
           <div class="head"></div>
           <div class="api-heads">
             <ul>
-              <li :class="apiPage==0?'active':''" @click="apiPage = 0">群组概况</li>
+              <li :class="apiPage==0?'active':''" @click="apiPage = 0; getCommit(1)">群组概况</li>
               <li :class="apiPage==1?'active':''" @click="gotoApiPage()">文档信息</li>
               <li :class="apiPage==2?'active':''" @click="apiPage = 2">api详情</li>
             </ul>
           </div>
           <div class="api-body">
+            <transition name="apibodyslide">
             <div class="api-body-group api-infor" v-if="apiPage == 0">
               <div class="group-left">
                 <div class="group-title">
@@ -78,7 +79,8 @@
                       <li v-for="commit in commits">
                         <i></i>
                         <span>{{commit.content}}</span>
-                        <span class="commitor">{{commit.person}}</span>
+                        <span style="margin-left: 10px">{{commit.name}}</span>
+                        <span class="commitor">{{commit.time}}</span>
                       </li>
                     </ul>
                   </transition>
@@ -91,14 +93,8 @@
                 <div class="doc-title">
                   <span>{{doc.title}}</span>
                   <span style="font-size: 17px;float: right;font-weight: 400;margin-right: 10px">文档ID:{{group.id}}</span>
-                </div>
-                <div class="doc-type">
-                  <div class="doc-type-cont1">
-                    <span>{{ docType[0] }}</span>
-                  </div>
-                  <div class="doc-type-cont2">
-                    <span>{{ docType[1] }}</span>
-                  </div>
+                  <span class="type">{{ docType[0] }}</span>
+                  <span class="type">{{ docType[1] }}</span>
                 </div>
                 <div class="doc-desc">
                   <div class="doc-desc-cont">
@@ -134,19 +130,19 @@
                 </div>
               </div>
             </div>
-            <div class="api-body-api api-infor" v-if="apiPage == 2">
+            <div class="api-body-api api-infor" v-if="apiPage == 2 && activeapi">
               <div class="api-title">
                 <span class="test">测试</span>
                 <div class="api-title-cont">
                   <div class="api-url">
-                    <span class="green-back">{{doc.type[1]}}</span>
+                    <span class="green-back">{{docType[1]}}</span>
                     <span>{{api.url}}</span>
-                    <i class="icon iconfont icon-plumage" style="float: left;margin-left: 15px;cursor: pointer"></i>
+                    <i class="icon iconfont icon-plumage" style="float: left;margin-left: 15px;cursor: pointer" @click="changeApiUrl(api.id)"></i>
                   </div>
                   <div class="api-desc">
                     <span class="green-back">{{api.type}}</span>
                     <span>{{api.desc}}</span>
-                    <i class="icon iconfont icon-plumage" style="float: left;margin-left: 15px;cursor: pointer"></i>
+                    <i class="icon iconfont icon-plumage" style="float: left;margin-left: 15px;cursor: pointer" @click="changeApiName(api.desc)"></i>
                   </div>
                 </div>
               </div>
@@ -197,7 +193,7 @@
                   <tr v-for="request,index in apiRequests">
                     <td class="col-1">{{index+1}}
                       <span style="padding: 0 5px;background: rgb(88, 219, 77);color:#ffffff;border-radius: 5px;margin-left: 3px"
-                      @click="request.requested = !request.requested">{{request.requested}}</span>
+                      @click="request.required = !request.required">{{request.required}}</span>
                     </td>
                     <td class="col-1"><input type="text" v-model="request.key" style="max-width: 75px"></td>
                     <td class="col-1">{{ request.parent.key }}</td>
@@ -241,7 +237,7 @@
                   <tr v-for="response,index in apiResponses">
                     <td class="col-1">{{index+1}}
                       <span style="padding: 0 5px;background: rgb(88, 219, 77);color:#ffffff;border-radius: 5px;margin-left: 3px"
-                      @click="response.responsed = !response.responsed">{{response.responsed}}</span>
+                      @click="response.required = !response.required">{{response.required}}</span>
                     </td>
                     <td class="col-1"><input type="text" name="" value="" v-model="response.key" style="max-width: 150px"></td>
                     <td class="col-1">{{ response.parent.key }}</td>
@@ -269,6 +265,10 @@
                 <i class="icon iconfont icon-plumage"></i>
               </div>
             </div>
+            <div v-if="apiPage == 2 && !activeapi">
+              <p style="padding-top: 100px;font-size: 20px">请先在文档信息页面选择接口（API）</p>
+            </div>
+          </transition>
             <div class="api-comment" v-if="apiPage == 1">
               <div class="api-comment-head" @click="showCommentPanel()">
                 <i class="icon iconfont icon-zhankai-left" v-if="!showComment"></i>
@@ -276,6 +276,9 @@
               </div>
               <transition name="comment-slide" v-if="showComment">
               <div class="api-comment-cont">
+                <div class="comment-head-nav">
+                  <h4>【评论】</h4>
+                </div>
                 <div class="api-comment-body">
                   <div class="comment-body-shadow">
                     <ul>
@@ -290,7 +293,6 @@
                         <div class="comment-content" v-html="comment.preview">
                         </div>
                         <div class="comment-foot">
-
                         </div>
                       </li>
                     </ul>
@@ -364,12 +366,7 @@ export default {
       apiPage: 0,
       group: {},
       groupPersons: [],
-      commits: [
-        {
-          content: "2017/6/22",
-          person: "adasda"
-        }
-      ],
+      commits: [],
       doc: {},
       docType: ["",""],
       apis: [],
@@ -396,6 +393,8 @@ export default {
       commentto: "",
       comments: [],
       floor: '',
+      activeapi: false,
+      key: true
     }
   },
   computed: {
@@ -423,6 +422,9 @@ export default {
         return false
       }
     },
+    createDoc: function(){
+      window.location = "/localhost:8080/#/home/new?id=" + this.group.id + "&name=" + this.group.name
+    },
     addHead: function(){
       var self = this
       self.showApiHead = false
@@ -440,9 +442,10 @@ export default {
       var self = this
       self.showApiRequest = false
       self.apiRequests.push({
+        api_id: self.api.id,
         parent: "",
         key: "",
-        requested: true,
+        required: true,
         type: 0,
         values: [],
         desc: "",
@@ -469,9 +472,10 @@ export default {
       var self = this
       self.showApiResponse = false
       self.apiResponses.push({
+        api_id: self.api.id,
         parent: "",
         key: "",
-        responsed: true,
+        required: true,
         type: 0,
         values: [],
         desc: "",
@@ -566,9 +570,10 @@ export default {
           }
         })
     },
-    getDocs: function(id){
+    getDocs: function(id, name){
       var self = this
       self.group.id = id
+      self.group.name = name
       request
         .get("/apiManagerEndCode/src/docs.php")
         .query({
@@ -629,11 +634,15 @@ export default {
             self.showApi = true
           }
         })
+      self.getCommit(1)
+      self.activeapi = false
+      self.apiPage = 0
     },
     gotoApiPage: function(){
       var self = this
-      if(self.apiPage != 1){
-        self.apiPage = 1
+      self.apiPage = 1
+      self.getComment(1)
+      if(self.key){
         this.$nextTick(() => {
           self.editor = new Editor({
             element: document.getElementById('editor3'),
@@ -641,8 +650,26 @@ export default {
           self.editor.render()
           self.editor.togglePreview()
         })
-        self.getComment(1)
       }
+      self.key = false
+    },
+    getCommit(page){
+      var self = this
+      request
+        .get('/apiManagerEndCode/src/commit.php')
+        .query({
+          docsid: self.doc.id,
+          page: page,
+          pagesize: 20
+        })
+        .end(function(err, response){
+          var res = JSON.parse(response.text)
+          if(res.result == 0){
+            swal(err.msg)
+          }else{
+            self.commits = res.resultList
+          }
+        })
     },
     getComment: function(page){
       var self = this
@@ -721,50 +748,84 @@ export default {
             reschildren.push(responses[i])
           }
         }
-        request
-          .post('/apiManagerEndCode/src/request_head.php')
-          .send({
-            heads: JSON.stringify(self.apiHeads)
-          })
-          .set('Content-Type', 'application/x-www-form-urlencoded')
-          .set('Accept', 'application/json')
-          .end(function(err, response){
-            var res = JSON.parse(response.text)
-            if(res.result == 0){
-              swal(res.msg)
-            }else{
-            }
-          })
-        request
-          .post('/apiManagerEndCode/src/api_info.php')
-          .send({
-            children: JSON.stringify(reqchildren)
-          })
-          .set('Content-Type', 'application/x-www-form-urlencoded')
-          .set('Accept', 'application/json')
-          .end(function(err, response){
-            var res = JSON.parse(response.text)
-            if(res.result == 0){
-              swal(res.msg)
-            }else{
-            }
-          })
-        request
-          .post('/apiManagerEndCode/src/response_api.php')
-          .send({
-            children: JSON.stringify(reschildren)
-          })
-          .set('Content-Type', 'application/x-www-form-urlencoded')
-          .set('Accept', 'application/json')
-          .end(function(err, response){
-            var res = JSON.parse(response.text)
-            if(res.result == 0){
-              swal(res.msg)
-            }else{
-            }
-          })
+        swal({
+          title: '提交一份修改信息',
+          input: 'text',
+          showCancelButton: true,
+          confirmButtonText: '确定',
+          showLoaderOnConfirm: true,
+          preConfirm: function (text) {
+            return new Promise(function (resolve, reject) {
+              setTimeout(function() {
+                if (text != '') {
+                  request
+                    .post('/apiManagerEndCode/src/request_head.php')
+                    .send({
+                      heads: JSON.stringify(self.apiHeads)
+                    })
+                    .set('Content-Type', 'application/x-www-form-urlencoded')
+                    .set('Accept', 'application/json')
+                    .end(function(err, response){
+                      var res = JSON.parse(response.text)
+                      if(res.result == 0){
+                        swal(res.msg)
+                      }else{
+                      }
+                    })
+                  request
+                    .post('/apiManagerEndCode/src/api_info.php')
+                    .send({
+                      children: JSON.stringify(reqchildren)
+                    })
+                    .set('Content-Type', 'application/x-www-form-urlencoded')
+                    .set('Accept', 'application/json')
+                    .end(function(err, response){
+                      var res = JSON.parse(response.text)
+                      if(res.result == 0){
+                        swal(res.msg)
+                      }else{
+                        swal('添加成功')
+                      }
+                    })
+                  request
+                    .post('/apiManagerEndCode/src/response_api.php')
+                    .send({
+                      children: JSON.stringify(reschildren)
+                    })
+                    .set('Content-Type', 'application/x-www-form-urlencoded')
+                    .set('Accept', 'application/json')
+                    .end(function(err, response){
+                      var res = JSON.parse(response.text)
+                      if(res.result == 0){
+                        swal(res.msg)
+                      }else{
+                      }
+                    })
+                  request
+                    .post('/apiManagerEndCode/src/commit.php')
+                    .send({
+                      docsid: self.doc.id,
+                    	userid: self.user.id,
+                    	content: text
+                    })
+                    .set('Content-Type', 'application/x-www-form-urlencoded')
+                    .end(function(err, response){
+                      var res = JSON.parse(response.text)
+                      if(res.result == 0){
+                        swal(res.msg)
+                      }else{
+                        swal("修改成功")
+                      }
+                    })
+                } else {
+                  resolve()
+                }
+              }, 2000)
+            })
+          },
+          allowOutsideClick: false
+        })
       }
-
     },
     findRepeat: function(params){
       for(var i in params){
@@ -819,6 +880,7 @@ export default {
       var self = this
       self.apiPage = 2
       self.api = self.apis[index]
+      self.activeapi =true
       request
         .get('/apiManagerEndCode/src/api_info.php')
         .query({
@@ -1053,16 +1115,16 @@ export default {
             border: 1px solid rgb(184, 184, 184)
             cursor: pointer
             border-radius: 5px
-            background: rgb(236, 221, 123)
+            background: #fff
           .active
             border-right: none
             box-shadow: 0 0 5px rgb(189, 189, 189)
         .api-body
           width: 100%
           height: 100%
-          background: linear-gradient(to bottom right,rgb(227, 224, 152), rgb(210, 197, 106), rgb(177, 176, 66))
+          // background: linear-gradient(to bottom right,rgb(227, 224, 152), rgb(210, 197, 106), rgb(177, 176, 66))
           border-bottom-right-radius: 20px 300px
-          box-shadow: 0 0 5px rgb(189, 189, 189)
+          box-shadow: 0 0 5px rgb(0, 0, 0)
           .api-infor
             width: 100%
             height: 100%
@@ -1157,27 +1219,13 @@ export default {
                 line-height: 60px
                 padding: 10px
                 text-align: left
-              .doc-type
-                width: 90%
-                height: 60px
-                margin: 0 auto 10px
-                line-height: 60px
-                font-size: 17px
-                .doc-type-cont1
-                  width: 40%
-                  height: 30px
-                  padding: 5px
-                  border: 1px solid rgb(185, 185, 185)
-                  float: left
-                  line-height: 30px
-                .doc-type-cont2
-                  width: 40%
-                  height: 30px
-                  padding: 5px
-                  border: 1px solid rgb(185, 185, 185)
-                  float: left
-                  margin-left: 30px
-                  line-height: 30px
+                .type
+                  padding: 2px 5px
+                  font-size: 15px
+                  font-weight: 400
+                  border-radius: 10px
+                  background-color: rgb(111, 252, 82)
+                  color: #ffffff
               .doc-desc
                 width: 90%
                 height: 600px
@@ -1432,6 +1480,7 @@ export default {
           height: 100%
           top: 0
           right: 0
+          border-radius: 10px
           .api-comment-head
             width: 30px
             height: 50px
@@ -1451,53 +1500,60 @@ export default {
             height: 100%
             box-shadow: 0 0 5px rgb(88, 88, 88) inset
             text-align: center
+            .comment-head-nav
+              height: 5%
+              background: rgb(77, 77, 77)
+              color: #ffffff
+              line-height: 280%
             .api-comment-body
               width: 99%
               height: 70%
               margin 0 auto
               overflow: hidden
+              box-shadow: 0 0 10px rgb(77, 77, 77) inset
               .comment-body-shadow
                 width: 102%
                 height: 100%
-                overflow: auto
-                background: rgba(181, 181, 181, .5)
-                li
-                  width: 96%
-                  margin: 20px auto
-                  .comment-head
-                    width: 100%
-                    text-align: left
-                    width: 100%
-                    i
-                      width: 40px
-                      height: 40px
-                      border-radius: 20px
-                      background: #fa3140
-                      color: #ffffff
-                      display: inline-block
-                      line-height: 40px
-                      text-align: center
-                      float: left
-                    ul
+                overflow-y: auto
+                overflow-x: hidden
+                ul
+                  width: 100%
+                  li
+                    width: 96%
+                    margin: 20px auto
+                    .comment-head
+                      width: 100%
+                      text-align: left
+                      width: 100%
+                      i
+                        width: 40px
+                        height: 40px
+                        border-radius: 20px
+                        background: rgb(123, 178, 238)
+                        color: #ffffff
+                        display: inline-block
+                        line-height: 40px
+                        text-align: center
+                        float: left
+                      ul
+                        margin-left: 20px
+                        height: 40px
+                        li
+                          margin: 0
+                          margin-left: 30px
+                    .comment-content
+                      width: 90%
                       margin-left: 20px
-                      background: rgb(230, 230, 230)
-                      height: 40px
-                      li
-                        margin: 0
-                        margin-left: 30px
-                  .comment-content
-                    width: 90%
-                    margin-left: 20px
-                    box-shadow: 0 0 3px rgb(52, 52, 52) inset
-                    text-align: left
-                    padding: 5px 10px
+                      box-shadow: 0 -2px 3px rgb(150, 150, 150) inset
+                      text-align: left
+                      padding: 5px 10px
+                      border-radius: 15px
             .api-comment-foot
               width: 99%
-              height: 30%
+              height: 25%
               margin: 0 auto
-              background: rgb(230, 167, 60)
               .CodeMirror.cm-s-paper
-                height: 180px
+                height: 130px
                 text-align: left
               .CodeMirror-code
                 text-align: left
@@ -1507,7 +1563,6 @@ export default {
                 width: 100%
                 height: 100%
                 border: none
-                background: rgb(230, 167, 60)
                 text-align: left
               .comment-foot-commit
                 height: 30px
@@ -1517,7 +1572,6 @@ export default {
                 span
                   padding: 10px
                   border-radius: 10px
-                  color: #ffffff
                   cursor: pointer
       .api-foot
         margin-top: 20px
@@ -1594,5 +1648,10 @@ export default {
   transition: all .5s cubic-bezier(.42,-0.26,.72,1.4)
 .dialog-enter, .dialog-leave-active
   transform: scale(0)
+  opacity: 0
+.apibodyslide-enter-active, .apibodyslide-leave-active
+  transition: all .5s
+.apibodyslide-enter, .apibodyslide-leave-active
+  transform: translateX(100px)
   opacity: 0
 </style>

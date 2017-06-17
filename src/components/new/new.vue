@@ -22,16 +22,18 @@
           </li>
           <li>
             <span>一个新的群组：</span>
-            <input type="text" name="" v-model="newGroup" value="" placeholder="输入群组名称">
+            <input type="text" name="" v-model="newGroup" placeholder="输入群组名称">
           </li>
-          <li style="position: relative;" v-if="docType[0] == '1'">
+          <li style="position: relative;" v-if="docType[0] == '1'&&newPage">
             <span>添加群组成员：</span>
             <div class="group-person">
               <span v-for="person in persons">
                 {{person.username}}
                 <i class="icon iconfont icon-shanchu" @click="removeArray(persons, person.username)"></i>
               </span>
+
               <input type="text" v-model="newPerson.username" placeholder="输入项目成员，‘enter’键添加" @keydown="boundle">
+
             </div>
             <ul class="names-wrapper" 
               v-show="nameWrapper.length!=0">
@@ -49,7 +51,8 @@
           </li>
         </ul>
         <div class="ensure">
-          <span class="createBtn" @click="createGroup()">创建</span>
+          <span class="createBtn" @click="createGroup()" v-if="newPage">创建</span>
+          <span class="createBtn" @click="addDoc()" v-if="!newPage">创建</span>
           <i class="icon iconfont icon-plumage"></i>
         </div>
       </div>
@@ -82,7 +85,9 @@ export default {
       doc: {
         title: "",
         docIntro: "",
-      }
+      },
+      inputable: "value",
+      newPage: true
     }
   },
   computed: {
@@ -142,6 +147,12 @@ export default {
       self.newPerson = {}
       //获取人物信息
     },
+    getQueryString(name){
+      var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+      var r = window.location.search.substr(1).match(reg);
+      if (r != null) return unescape(r[2])
+      return ''
+    },
     createDoc: function(){
       var self = this
       swal.setDefaults({
@@ -150,7 +161,8 @@ export default {
         showCancelButton: true,
         allowOutsideClick: false,
         animation: true,
-        progressSteps: ['1', '2']
+        progressSteps: ['1', '2'],
+        allowOutsideClick: false
       })
       
       var steps = [
@@ -226,6 +238,39 @@ export default {
         }
       }
     },
+    addDoc: function(){
+      var self = this
+      if (self.doc.title == ""){
+        swal("文档标题不能为空哦")
+      }else if(self.editor.codemirror.getValue() == ""){
+        swal("文档描述不能为空哦")
+      }else{
+        request
+          .post('/apiManagerEndCode/src/docs.php')
+          .send({
+            title: self.doc.title,
+            type: self.docType.join(""),
+            desc: self.editor.codemirror.getValue(),
+            groupid: self.newGroupID
+          })
+          .set('Content-Type', 'application/x-www-form-urlencoded')
+          .set('Accept', 'application/json')
+          .end(function(err, response){
+            var res = JSON.parse(response.text)
+            if(res.result == 1){
+              swal(
+                '创建成功',
+                '',
+                'success'
+              )
+            }else if(res.result == 0){
+              swal(res.msg)
+            }else{
+              swal(err)
+            }
+          })
+      }
+    },
     createGroup: function(){
       var self = this
       var ids = []
@@ -293,7 +338,25 @@ export default {
     this.tiemr = null
   },
   mounted() {
-    this.createDoc();
+    var id = this.$route.query.id
+    var name = this.$route.query.name
+    console.log(typeof(id))
+    if(id){
+      this.newGroup = name
+      this.newGroupID = id
+      this.showDoc = true
+      this.docType = ["1","0"]
+      this.resultName = ["多人文档","web"],
+      this.newPage = false
+      this.$nextTick(() => {
+        this.editor = new Editor({
+          element: document.getElementById('editor'),
+        })
+        this.editor.render()
+      })
+    }else{
+     this.createDoc();
+    }
   },
   components: { close }
 }
