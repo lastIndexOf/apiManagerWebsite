@@ -21,7 +21,7 @@
       <div class="container-doc" v-if="!showApi">
         <div class="doc-head">
           <span>文档列表</span>
-          <i class="icon iconfont icon-tianjia"></i>
+          <i class="icon iconfont icon-tianjia" @click=""></i>
         </div>
         <div class="doc-cont">
           <div class="doc-list">
@@ -102,7 +102,7 @@
                 </div>
                 <div class="doc-desc">
                   <div class="doc-desc-cont">
-                    <textarea id="editor" name="name" rows="10" cols="80">{{ doc.desc }}</textarea>
+                    <textarea id="editor3" name="name" rows="20" cols="80">{{ doc.desc }}</textarea>
                   </div>
                 </div>
               </div>
@@ -110,6 +110,10 @@
                 <div class="doc-apis">
                   <div class="doc-apis-title">
                     <span>接口列表</span>
+                    <i class="icon iconfont icon-tianjia"
+                    style="float: right;cursor: pointer"
+                      @click="Apidialog = true"
+                    ></i>
                   </div>
                   <div class="doc-apis-body">
                     <tr>
@@ -118,10 +122,12 @@
                       <th style="width: 15%;margin-left: 5px;">操作</th>
                     </tr>
                     <div class="doc-api-list">
-                      <tr v-for="api in apis" @click="getApiInfor(api.apisid)">
-                        <td>{{api.desc}}</td>
-                        <td style="width: 50%;"><span class="apiType">{{api.type}}</span>{{api.url}}</td>
-                        <td style="width: 15%;cursor: pointer"><span>删除</span></td>
+                      <tr v-for="Api,index in apis"
+                          @click="getApiInfor(index, Api.id)"
+                          style="cursor: pointer">
+                        <td>{{Api.desc}}</td>
+                        <td style="width: 50%;"><span class="apiType">{{Api.type}}</span>{{Api.url}}</td>
+                        <td style="width: 15%;cursor: pointer"><span @click="deleteApi(index, Api.id)">删除</span></td>
                       </tr>
                     </div>
                   </div>
@@ -166,6 +172,7 @@
                       <option value="2">Accept-Encoding</option>
                       <option value="3">Accept-Language</option>
                       <option value="4">Accept-Ranges</option>
+                      <option value="5">Content-Type</option>
                     </select></td>
                     <td class="col-2"><input type="text" name="" value="" v-model="apihead.name"></td>
                     <td class="col-1"><span style="cursor: pointer" @click="removeHead(index)">删除</span></td>
@@ -271,10 +278,29 @@
               <div class="api-comment-cont">
                 <div class="api-comment-body">
                   <div class="comment-body-shadow">
+                    <ul>
+                      <li v-for="comment,index in comments" @click="responseForComment(index, comment.id)">
+                        <div class="comment-head">
+                          <i>{{index+1}}楼</i>
+                          <ul>
+                            <li>{{ comment.name }}</li>
+                            <li>{{ comment.time }}</li>
+                          </ul>
+                        </div>
+                        <div class="comment-content" v-html="comment.preview">
+                        </div>
+                        <div class="comment-foot">
+
+                        </div>
+                      </li>
+                    </ul>
                   </div>
                 </div>
                 <div class="api-comment-foot">
                   <textarea id="commentEditor" name="name" rows="8" cols="80"></textarea>
+                  <div class="comment-foot-commit">
+                    <span @click="addComment()">发送</span>
+                  </div>
                 </div>
               </div>
             </transition>
@@ -283,6 +309,40 @@
         </div>
       </div>
     </div>
+    <transition name="dialog">
+    <div class="addApiDialog" v-if="Apidialog">
+      <div class="dialog-shadow"></div>
+      <div class="dialog-content">
+        <div class="dialog-title">
+          创建接口
+          <i class="icon iconfont icon-shanchu" @click="Apidialog = false"></i>
+        </div>
+        <ul>
+          <li>
+            <span>类型:</span>
+            <select v-model="newApi.type">
+              <option value="post">post</option>
+              <option value="put">put</option>
+              <option value="get">get</option>
+              <option value="delete">delete</option>
+              <option value="update">update</option>
+            </select>
+          </li>
+          <li>
+            <span>路径:</span>
+            <input type="text" v-model="newApi.url">
+          </li>
+          <li>
+            <span>描述:</span>
+            <input type="text" v-model="newApi.desc">
+          </li>
+        </ul>
+        <div class="dialog-foot">
+          <span @click="addApi()">确定</span>
+        </div>
+      </div>
+    </div>
+    </transition>
   </div>
 </template>
 
@@ -314,10 +374,16 @@ export default {
       docType: ["",""],
       apis: [],
       api: {
-        desc: "user增加",
-        id: "121212",
-        type: "POST",
-        url: "/tourplace/src/user.php"
+        desc: "",
+        id: "",
+        type: "",
+        url: ""
+      },
+      newApi: {
+        docsid: "",
+        type: "post",
+        url: "",
+        desc: ""
       },
       apiHeads:[],
       showApiHead: true,
@@ -326,16 +392,16 @@ export default {
       apiResponses:[],
       showApiResponse: true,
       showComment: false,
-      saveProgram: 0
+      Apidialog: false,
+      commentto: "",
+      comments: [],
+      floor: '',
     }
   },
   computed: {
     ...mapState([
       'showTabs'
-    ]),
-    saveProgram: function(){
-      alert(this.saveProgram)
-    }
+    ])
   },
   methods: {
     ...mapMutations([
@@ -362,7 +428,8 @@ export default {
       self.showApiHead = false
       self.apiHeads.push({
         head: 0,
-        name: ""
+        name: "",
+        api_id: self.api.id
       })
     },
     removeHead: function(index){
@@ -426,6 +493,59 @@ export default {
     removeResponse: function(index){
       var self = this
       self.apiResponses.splice(index,1)
+    },
+    addApi: function(){
+      var self = this
+      self.newApi.docsid = self.doc.id
+      request
+        .post('/apiManagerEndCode/src/apis.php')
+        .send(self.newApi)
+        .set('Content-Type', 'application/x-www-form-urlencoded')
+        .set('Accept', 'application/json')
+        .end(function(err, response){
+          var res = JSON.parse(response.text)
+          if(res.result == 0){
+            swal(res.msg)
+          }else{
+            self.newApi.id = res.id
+            self.apis.push(self.newApi)
+            self.newApi = {
+              docsid: "",
+              type: "post",
+              url: "",
+              desc: ""
+            }
+            swal(
+              '添加成功',
+              '',
+              'success'
+            )
+            self.Apidialog = false
+          }
+        })
+    },
+    deleteApi: function(index, id){
+      var self = this
+      request
+        .del('/apiManagerEndCode/src/apis.php')
+        .send({
+          apisid: id
+        })
+        .set('Content-Type', 'application/x-www-form-urlencoded')
+        .set('Accept', 'application/json')
+        .end(function(err, response){
+          var res = JSON.parse(response.text)
+          if(res.result == 0){
+            swal(res.msg)
+          }else{
+            swal(
+              '删除成功',
+              '',
+              'success'
+            )
+            self.apis.splice(index,1)
+          }
+        })
     },
     getGroups: function(){
       var self = this
@@ -516,11 +636,32 @@ export default {
         self.apiPage = 1
         this.$nextTick(() => {
           self.editor = new Editor({
-            element: document.getElementById('editor'),
+            element: document.getElementById('editor3'),
           })
           self.editor.render()
+          self.editor.togglePreview()
         })
+        self.getComment(1)
       }
+    },
+    getComment: function(page){
+      var self = this
+      request
+        .get('/apiManagerEndCode/src/comment.php')
+        .query({
+          docsid: self.doc.id,
+          page: page,
+          pagesize: 20
+        })
+        .set('Accept', 'application/x-www-form-urlencoded')
+        .end(function(err, response){
+          var res = JSON.parse(response.text)
+          if(res.result == 0){
+            swal(res.msg)
+          }else{
+            self.comments = res.resultList
+          }
+        })
     },
     saveParam: function(){
       var self = this
@@ -535,87 +676,95 @@ export default {
           swal("第"+j+"行头部信息出现重复哦")
           break
         }else{
-          hash[heads[i].type] = true
+          hash[heads[i].head] = true
         }
       }
       //参数查重
       if(!self.findRepeat(requests)){
         swal("请仔细检查请求避免出现重复哦")
-      }
-      if(!self.findRepeat(responses)){
+      }else if(!self.findRepeat(responses)){
         swal("请仔细检查响应避免出现重复哦")
+      }else{
+        //请求参数数据
+        var reqchildren = []
+        for (var i in requests){
+          var key = 0
+          requests[i].children = []
+          for (var index = 0; index < i; index ++){
+            if(requests[i].parent == requests[index]){
+              requests[i].parent = ""
+              requests[index].children.push(requests[i])
+              key = 1
+              break
+            }
+          }
+          if(key == 0){
+            requests[i].parent = ""
+            reqchildren.push(requests[i])
+          }
+        }
+        //响应参数数据
+        var reschildren = []
+
+        for (var i in responses){
+          var key = 0
+          responses[i].children = []
+          for (var index = 0; index < i; index ++){
+            if(responses[i].parent == responses[index]){
+              responses[i].parent = ""
+              responses[index].children.push(responses[i])
+              key = 1
+            }
+          }
+          if(key == 0){
+            responses[i].parent = ""
+            reschildren.push(responses[i])
+          }
+        }
+        request
+          .post('/apiManagerEndCode/src/request_head.php')
+          .send({
+            heads: JSON.stringify(self.apiHeads)
+          })
+          .set('Content-Type', 'application/x-www-form-urlencoded')
+          .set('Accept', 'application/json')
+          .end(function(err, response){
+            var res = JSON.parse(response.text)
+            if(res.result == 0){
+              swal(res.msg)
+            }else{
+            }
+          })
+        request
+          .post('/apiManagerEndCode/src/api_info.php')
+          .send({
+            children: JSON.stringify(reqchildren)
+          })
+          .set('Content-Type', 'application/x-www-form-urlencoded')
+          .set('Accept', 'application/json')
+          .end(function(err, response){
+            var res = JSON.parse(response.text)
+            if(res.result == 0){
+              swal(res.msg)
+            }else{
+            }
+          })
+        request
+          .post('/apiManagerEndCode/src/response_api.php')
+          .send({
+            children: JSON.stringify(reschildren)
+          })
+          .set('Content-Type', 'application/x-www-form-urlencoded')
+          .set('Accept', 'application/json')
+          .end(function(err, response){
+            var res = JSON.parse(response.text)
+            if(res.result == 0){
+              swal(res.msg)
+            }else{
+            }
+          })
       }
-      //请求参数数据
-      var reqchildren = []
-      for (var i in requests){
-        var key = 0
-        requests[i].children = []
-        for (var index = 0; index < i; index ++){
-          if(requests[i].parent == requests[index]){
-            requests[index].children.push(requests[i])
-            key = 1
-          }
-        }
-        if(key == 0){
-          reqchildren.push(requests[i])
-        }
-      }
-      //响应参数数据
-      var reschildren = []
-      for (var i in responses){
-        var key = 0
-        responses[i].children = []
-        for (var index = 0; index < i; index ++){
-          if(responses[i].parent == responses[index]){
-            responses[index].children.push(responses[i])
-            key = 1
-          }
-        }
-        if(key == 0){
-          reschildren.push(responses[i])
-        }
-      }
-      request
-        .post('/apiManagerEndCode/src/api_info.php')
-        .send({children: reqchildren})
-        .set('Content-Type', 'application/x-www-form-urlencoded')
-        .set('Accept', 'application/json')
-        .end(function(err, response){
-          var res = JSON.parse(response.text)
-          if(res.result == 0){
-            swal(res.msg)
-          }else{
-            self.saveProgram ++
-          }
-        })
-      request
-        .post('/apiManagerEndCode/src/request_head.php')
-        .send({
-          heads: self.apiHeads
-        })
-        .set('Content-Type', 'application/x-www-form-urlencoded')
-        .set('Accept', 'application/json')
-        .end(function(err, response){
-          var res = JSON.parse(response.text)
-          if(res.result == 0){
-            swal(res.msg)
-          }else{
-            self.saveProgram ++
-          }
-        })
-      request
-        .post('/apiManagerEndCode/src/response_api.php')
-        .send({children: reschildren})
-        .set('Content-Type', 'application/x-www-form-urlencoded')
-        .set('Accept', 'application/json')
-        .end(function(err, response){
-          var res = JSON.parse(response.text)
-          if(res.result == 0){
-            swal(res.msg)
-          }else{
-            self.saveProgram ++
-          }
-        })
+
     },
     findRepeat: function(params){
       for(var i in params){
@@ -627,8 +776,127 @@ export default {
       }
       return true
     },
-    getApiInfor: function(id){
-
+    addComment(){
+      var self = this
+      var content = self.editor2.codemirror.getValue()
+      self.editor2.togglePreview()
+      var preview = document.querySelectorAll('.editor-preview')[1].innerHTML
+      if(this.floor != ""){
+        content = "回复"+ self.floor + "楼:" + content
+        preview = "<p>回复"+ self.floor + "楼:<p>" + preview
+      }
+      request
+        .post('/apiManagerEndCode/src/comment.php')
+        .send({
+          docsid: self.doc.id,
+          content: content,
+          preview: preview,
+          from: "",
+          comment_id: self.commentto
+        })
+        .set('Accept', 'application/json')
+        .set('Content-Type', 'application/x-www-form-urlencoded')
+        .end(function(err, response){
+          var res = JSON.parse(response.text)
+          if(res.result == 0){
+            swal(res.msg)
+          }else{
+            swal(
+              '留言成功',
+              '',
+              'success'
+            )
+            document.querySelectorAll('.editor-preview')[1].innerHTML = ""
+            document.querySelectorAll('.CodeMirror-code')[1].innerText = ""
+            self.editor2.togglePreview()
+            self.comments.push(res.comment)
+            self.commentto = ""
+            self.floor = ""
+          }
+        })
+    },
+    getApiInfor: function(index,id){
+      var self = this
+      self.apiPage = 2
+      self.api = self.apis[index]
+      request
+        .get('/apiManagerEndCode/src/api_info.php')
+        .query({
+          api_id: id
+        })
+        .set('Content-Tyoe', 'application/x-www-form-urlencoded')
+        .set('Accept', 'application/json')
+        .end(function(err, response){
+          var res = JSON.parse(response.text)
+          if(res.result == 0){
+            swal(res.msg)
+          }else{
+            for(var i in res.resultList){
+              if(res.resultList[i].parent != ""){
+                for(var j = 0; j < i; j++){
+                  if(res.resultList[i].parent == res.resultList[j].id){
+                    res.resultList[i].parent = res.resultList[j]
+                    self.apiRequests.push(res.resultList[i])
+                    break
+                  }
+                }
+              }else{
+                self.apiRequests.push(res.resultList[i])
+              }
+            }
+          }
+        })
+      request
+        .get('/apiManagerEndCode/src/request_head.php')
+        .query({
+          type: 1,
+          api_id: id
+        })
+        .set('Content-Type', 'application/x-www-form-urlencoded')
+        .set('Accept', 'application/json')
+        .end(function(err, response){
+          var res = JSON.parse(response.text)
+          if(res.result == 0){
+            swal(res.msg)
+          }else{
+            self.apiHeads = res.resultList
+          }
+        })
+      request
+        .get('/apiManagerEndCode/src/response_api.php')
+        .query({
+          api_id: id
+        })
+        .set('Content-Tyoe', 'application/x-www-form-urlencoded')
+        .set('Accept', 'application/json')
+        .end(function(err, response){
+          var res = JSON.parse(response.text)
+          if(res.result == 0){
+            swal(res.msg)
+          }else{
+            for(var i in res.resultList){
+              if(res.resultList[i].parent != ""){
+                for(var j = 0; j < i; j++){
+                  if(res.resultList[i].parent == res.resultList[j].id){
+                    res.resultList[i].parent = res.resultList[j]
+                    self.apiResponses.push(res.resultList[i])
+                    break
+                  }
+                }
+              }else{
+                self.apiResponses.push(res.resultList[i])
+              }
+            }
+          }
+        })
+    },
+    responseForComment: function(index, id){
+      var floor = Number(index) + 1
+      this.editor2.togglePreview()
+      document.querySelectorAll('.CodeMirror-code')[1].getElementsByTagName('pre')[0].innerHTML = "@回复"+ floor +"楼:"
+      document.querySelectorAll('.editor-preview')[1].innerHTML = "@回复"+ floor +"楼:"
+      this.commentto = id
+      this.floor = floor
     },
     showCommentPanel: function(){
       var self = this
@@ -638,6 +906,7 @@ export default {
           element: document.getElementById('commentEditor'),
         })
         self.editor2.render()
+        self.editor2.togglePreview()
       })
     }
   },
@@ -926,6 +1195,8 @@ export default {
                     border: none
                     width: 100%
                     height: 100%
+                  .CodeMirror.cm-s-paper
+                    height: 500px
             .doc-right
               flex: 0 0 50%
               .doc-apis
@@ -1182,7 +1453,7 @@ export default {
             text-align: center
             .api-comment-body
               width: 99%
-              height: 80%
+              height: 70%
               margin 0 auto
               overflow: hidden
               .comment-body-shadow
@@ -1190,27 +1461,138 @@ export default {
                 height: 100%
                 overflow: auto
                 background: rgba(181, 181, 181, .5)
+                li
+                  width: 96%
+                  margin: 20px auto
+                  .comment-head
+                    width: 100%
+                    text-align: left
+                    width: 100%
+                    i
+                      width: 40px
+                      height: 40px
+                      border-radius: 20px
+                      background: #fa3140
+                      color: #ffffff
+                      display: inline-block
+                      line-height: 40px
+                      text-align: center
+                      float: left
+                    ul
+                      margin-left: 20px
+                      background: rgb(230, 230, 230)
+                      height: 40px
+                      li
+                        margin: 0
+                        margin-left: 30px
+                  .comment-content
+                    width: 90%
+                    margin-left: 20px
+                    box-shadow: 0 0 3px rgb(52, 52, 52) inset
+                    text-align: left
+                    padding: 5px 10px
             .api-comment-foot
               width: 99%
-              height: 20%
+              height: 30%
               margin: 0 auto
               background: rgb(230, 167, 60)
               .CodeMirror.cm-s-paper
-                max-height: 125px
+                height: 180px
+                text-align: left
+              .CodeMirror-code
+                text-align: left
+              .CodeMirror-preview
+                text-align: left
               textarea
                 width: 100%
                 height: 100%
                 border: none
                 background: rgb(230, 167, 60)
                 text-align: left
+              .comment-foot-commit
+                height: 30px
+                margin: -33px auto
+                line-height: 30px
+                text-align: left
+                span
+                  padding: 10px
+                  border-radius: 10px
+                  color: #ffffff
+                  cursor: pointer
       .api-foot
         margin-top: 20px
         width: 90%
         text-align: right
         span
           cursor: pointer
+  .addApiDialog
+    width: 100%
+    height: 100%
+    position: relative
+    top: -100%
+    .dialog-shadow
+      width: 100%
+      height: 100%
+      background: rgba(0, 0, 0, .5)
+      z-index: 999
+    .dialog-content
+      width: 300px
+      height: 300px
+      position: absolute
+      left: 0
+      top: 0
+      background: #ffffff
+      z-index: 999
+      left: 50%
+      top: 50%
+      margin-top: -150px
+      margin-left: -150px
+      border-radius: 10px
+      box-shadow: 0 0 10px rgb(238, 220, 155)
+      .dialog-title
+        margin-top: 20px
+        font-size: 19px
+        i
+          position: absolute
+          right: 15px
+          top: 5px
+          font-size: 10px
+          cursor: pointer
+      ul
+        margin-top: 20px
+        li
+          width: 100%
+          height: 30px
+          margin-top: 10px
+          span
+            margin-right: 15px
+          input
+            border-radius: 5px
+            border: 1px solid rgb(200, 200, 200)
+          select
+            width: 172px
+            border-radius: 5px
+            outline: none
+            background: rgba(0, 0, 0, 0)
+      .dialog-foot
+        width: 100%
+        height: 30px
+        margin-top: 30px
+        span
+          padding: 5px 10px
+          border: 1px solid rgb(193, 194, 193)
+          border-radius: 5px
+          cursor: pointer
+          &:hover
+            background: #fa3140
+            color: #ffffff
 .comment-slide-enter-active, .comment-slide-leave-active
   transition: all 0s
 .comment-slide-enter, .comment-slide-leave-active
   right: -300px
+.dialog-enter-active, .dialog-leave-active
+  transition: all .5s cubic-bezier(.42,-0.26,.72,1.4)
+.dialog-enter, .dialog-leave-active
+  transform: scale(0)
+  opacity: 0
 </style>

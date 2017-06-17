@@ -14,7 +14,7 @@ a{color:#333;text-decoration:none;}
 input{
     -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
     -webkit-user-modify: read-write-plaintext-only;
-} 
+}
 button {
 	-webkit-tap-highlight-color: rgba(255,255,255,0)
 }
@@ -22,5 +22,5 @@ button {
 
 /* markdown 编辑器 */
 /*.CodeMirror.cm-s-paper { max-height: 160px }*/
-/* 布局(grids)(.g-) */ 
+/* 布局(grids)(.g-) */
 /* 页面 */
