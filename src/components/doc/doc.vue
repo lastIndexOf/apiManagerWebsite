@@ -108,7 +108,7 @@
                       <span>接口列表</span>
                       <i class="icon iconfont icon-tianjia"
                       style="float: right;cursor: pointer"
-                        @click="Apidialog = true"
+                        @click="showDialog"
                       ></i>
                     </div>
                     <div class="doc-apis-body">
@@ -409,9 +409,20 @@ export default {
       'notShowMenu',
       'cancelBlur'
     ]),
+    showDialog() {
+      this.Apidialog = true
+
+      document.querySelectorAll('.editor-preview.editor-preview-active')
+        .forEach(item => {
+          item.classList.remove('editor-preview-active')
+        })
+      document.querySelectorAll('.icon-preview.active')
+        .forEach(item => {
+          item.classList.remove('active')
+        })
+    },
     goApi() {
       this.apiPage = 2
-
     },
     back(e) {
       this.notShowMenu()
@@ -427,7 +438,8 @@ export default {
       }
     },
     createDoc: function(){
-      window.location = "/localhost:8080/#/home/new?id=" + this.group.id + "&name=" + this.group.name
+      router.replace(`/home/new?id=${ this.group.id }&name=${ this.group.name }`)
+      // window.location = "/localhost:8080/#/home/new?id=" + this.group.id + "&name=" + this.group.name
     },
     addHead: function(){
       var self = this
@@ -657,6 +669,20 @@ export default {
           })
           self.editor.render()
           self.editor.togglePreview()
+          
+          let timer = setTimeout(() => {
+            clearTimeout(timer)
+            timer = null
+            document.querySelectorAll('.editor-preview.editor-preview-active')
+              .forEach(item => {
+                item.classList.remove('editor-preview-active')
+              })
+            document.querySelectorAll('.icon-preview.active')
+              .forEach(item => {
+                item.classList.remove('active')
+              })
+          }, 500)
+
         })
       })
       // }
