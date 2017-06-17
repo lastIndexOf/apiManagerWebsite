@@ -42,270 +42,270 @@
           <div class="head"></div>
           <div class="api-heads">
             <ul>
-              <li :class="apiPage==0?'active':''" @click="apiPage = 0; getCommit(1)">群组概况</li>
-              <li :class="apiPage==1?'active':''" @click="gotoApiPage()">文档信息</li>
-              <li :class="apiPage==2?'active':''" @click="apiPage = 2">api详情</li>
+              <li :class="{active: apiPage==0}" @click="apiPage = 0; getCommit(1)">群组概况</li>
+              <li :class="{active: apiPage==1}" @click="gotoApiPage()">文档信息</li>
+              <li :class="{active: apiPage==2}" @click="goApi">api详情</li>
             </ul>
           </div>
           <div class="api-body">
             <transition name="apibodyslide">
-            <div class="api-body-group api-infor" v-if="apiPage == 0">
-              <div class="group-left">
-                <div class="group-title">
-                  <i class="icon iconfont icon-qunzu"></i>
-                  <span>{{group.name}}</span>
-                  <span style="font-size: 17px;float: right;font-weight: 400;margin-right: 10px">群组ID:{{group.id}}</span>
-                </div>
-                <div class="group-persons">
-                  <div class="group-header">
-                    <span>组长： {{group.headman}}</span>
+              <div class="api-body-group api-infor" key="group" v-if="apiPage == 0">
+                <div class="group-left">
+                  <div class="group-title">
+                    <i class="icon iconfont icon-qunzu"></i>
+                    <span>{{group.name}}</span>
+                    <span style="font-size: 17px;float: right;font-weight: 400;margin-right: 10px">群组ID:{{group.id}}</span>
                   </div>
-                  <div class="group-others">
-                    <ul>
-                      <li v-for="person in groupPersons">成员：{{person}}</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-              <div class="group-right">
-                <div class="group-dynamic">
-                  <div class="group-dynamic-title">
-                    <i class="icon iconfont icon-dongtai"></i>
-                    <span>群组动态</span>
-                  </div>
-                  <div class="group-dynamic-body">
-                    <transition name="aslide">
-                    <ul>
-                      <li v-for="commit in commits">
-                        <i></i>
-                        <span>{{commit.content}}</span>
-                        <span style="margin-left: 10px">{{commit.name}}</span>
-                        <span class="commitor">{{commit.time}}</span>
-                      </li>
-                    </ul>
-                  </transition>
+                  <div class="group-persons">
+                    <div class="group-header">
+                      <span>组长： {{group.headman}}</span>
+                    </div>
+                    <div class="group-others">
+                      <ul>
+                        <li v-for="person in groupPersons">成员：{{person}}</li>
+                      </ul>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
-            <div class="api-body-doc api-infor" v-if="apiPage == 1">
-              <div class="doc-left">
-                <div class="doc-title">
-                  <span>{{doc.title}}</span>
-                  <span style="font-size: 17px;float: right;font-weight: 400;margin-right: 10px">文档ID:{{group.id}}</span>
-                  <span class="type">{{ docType[0] }}</span>
-                  <span class="type">{{ docType[1] }}</span>
-                </div>
-                <div class="doc-desc">
-                  <div class="doc-desc-cont">
-                    <textarea id="editor3" name="name" rows="20" cols="80">{{ doc.desc }}</textarea>
-                  </div>
-                </div>
-              </div>
-              <div class="doc-right">
-                <div class="doc-apis">
-                  <div class="doc-apis-title">
-                    <span>接口列表</span>
-                    <i class="icon iconfont icon-tianjia"
-                    style="float: right;cursor: pointer"
-                      @click="Apidialog = true"
-                    ></i>
-                  </div>
-                  <div class="doc-apis-body">
-                    <tr>
-                      <th>接口功能</th>
-                      <th style="width: 50%;">接口路径</th>
-                      <th style="width: 15%;margin-left: 5px;">操作</th>
-                    </tr>
-                    <div class="doc-api-list">
-                      <tr v-for="Api,index in apis"
-                          @click="getApiInfor(index, Api.id)"
-                          style="cursor: pointer">
-                        <td>{{Api.desc}}</td>
-                        <td style="width: 50%;"><span class="apiType">{{Api.type}}</span>{{Api.url}}</td>
-                        <td style="width: 15%;cursor: pointer"><span @click="deleteApi(index, Api.id)">删除</span></td>
-                      </tr>
+                <div class="group-right">
+                  <div class="group-dynamic">
+                    <div class="group-dynamic-title">
+                      <i class="icon iconfont icon-dongtai"></i>
+                      <span>群组动态</span>
+                    </div>
+                    <div class="group-dynamic-body">
+                      <transition name="aslide">
+                      <ul>
+                        <li v-for="commit in commits">
+                          <i></i>
+                          <span>{{commit.content}}</span>
+                          <span style="margin-left: 10px">{{commit.name}}</span>
+                          <span class="commitor">{{commit.time}}</span>
+                        </li>
+                      </ul>
+                    </transition>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-            <div class="api-body-api api-infor" v-if="apiPage == 2 && activeapi">
-              <div class="api-title">
-                <span class="test">测试</span>
-                <div class="api-title-cont">
-                  <div class="api-url">
-                    <span class="green-back">{{docType[1]}}</span>
-                    <span>{{api.url}}</span>
-                    <i class="icon iconfont icon-plumage" style="float: left;margin-left: 15px;cursor: pointer" @click="changeApiUrl(api.id)"></i>
+              <div class="api-body-doc api-infor" key="doc" v-if="apiPage == 1">
+                <div class="doc-left">
+                  <div class="doc-title">
+                    <span>{{doc.title}}</span>
+                    <span style="font-size: 17px;float: right;font-weight: 400;margin-right: 10px">文档ID:{{group.id}}</span>
+                    <span class="type">{{ docType[0] }}</span>
+                    <span class="type">{{ docType[1] }}</span>
                   </div>
-                  <div class="api-desc">
-                    <span class="green-back">{{api.type}}</span>
-                    <span>{{api.desc}}</span>
-                    <i class="icon iconfont icon-plumage" style="float: left;margin-left: 15px;cursor: pointer" @click="changeApiName(api.desc)"></i>
+                  <div class="doc-desc">
+                    <div class="doc-desc-cont">
+                      <textarea id="editor3" name="name" rows="20" cols="80">{{ doc.desc }}</textarea>
+                    </div>
+                  </div>
+                </div>
+                <div class="doc-right">
+                  <div class="doc-apis">
+                    <div class="doc-apis-title">
+                      <span>接口列表</span>
+                      <i class="icon iconfont icon-tianjia"
+                      style="float: right;cursor: pointer"
+                        @click="Apidialog = true"
+                      ></i>
+                    </div>
+                    <div class="doc-apis-body">
+                      <tr>
+                        <th>接口功能</th>
+                        <th style="width: 50%;">接口路径</th>
+                        <th style="width: 15%;margin-left: 5px;">操作</th>
+                      </tr>
+                      <div class="doc-api-list">
+                        <tr v-for="Api,index in apis"
+                            @click="getApiInfor(index, Api.id)"
+                            style="cursor: pointer">
+                          <td>{{Api.desc}}</td>
+                          <td style="width: 50%;"><span class="apiType">{{Api.type}}</span>{{Api.url}}</td>
+                          <td style="width: 15%;cursor: pointer"><span @click="deleteApi(index, Api.id)">删除</span></td>
+                        </tr>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-              <div class="api-head" type="table">
-                <tr @click="showApiHead = !showApiHead">
-                  <th class="col-1" style="font-weight: bold">
-                    <i class="icon iconfont icon-zhankai1" v-if="!showApiHead"></i>
-                    <i class="icon iconfont icon-shouqi" v-if="showApiHead"></i>
-                    头部
-                  </th>
-                  <th class="col-2">标签</th>
-                  <th class="col-2">内容</th>
-                  <th class="col-1">操作
-                    <i class="icon iconfont icon-xinzeng" style="float: right;font-size: 20px;" @click="addHead()"></i>
-                  </th>
-                </tr>
-                <div class="api-head-shadow" v-if="showApiHead">
-                  <tr v-for="apihead, index in apiHeads">
-                    <td class="col-1"><span style="margin-left: 15px">{{index+1}}</span></td>
-                    <td class="col-2"><select class="" name="" v-model="apihead.head">
-                      <option value="0">Accept</option>
-                      <option value="1">Accept-Charset</option>
-                      <option value="2">Accept-Encoding</option>
-                      <option value="3">Accept-Language</option>
-                      <option value="4">Accept-Ranges</option>
-                      <option value="5">Content-Type</option>
-                    </select></td>
-                    <td class="col-2"><input type="text" name="" value="" v-model="apihead.name"></td>
-                    <td class="col-1"><span style="cursor: pointer" @click="removeHead(index)">删除</span></td>
+              <div class="api-body-api api-infor" key="api" v-if="apiPage == 2 && activeapi">
+                <div class="api-title">
+                  <span class="test">测试</span>
+                  <div class="api-title-cont">
+                    <div class="api-url">
+                      <span class="green-back">{{docType[1]}}</span>
+                      <span>{{api.url}}</span>
+                      <i class="icon iconfont icon-plumage" style="float: left;margin-left: 15px;cursor: pointer" @click="changeApiUrl(api.id)"></i>
+                    </div>
+                    <div class="api-desc">
+                      <span class="green-back">{{api.type}}</span>
+                      <span>{{api.desc}}</span>
+                      <i class="icon iconfont icon-plumage" style="float: left;margin-left: 15px;cursor: pointer" @click="changeApiName(api.desc)"></i>
+                    </div>
+                  </div>
+                </div>
+                <div class="api-head" type="table">
+                  <tr @click="showApiHead = !showApiHead">
+                    <th class="col-1" style="font-weight: bold">
+                      <i class="icon iconfont icon-zhankai1" v-if="!showApiHead"></i>
+                      <i class="icon iconfont icon-shouqi" v-if="showApiHead"></i>
+                      头部
+                    </th>
+                    <th class="col-2">标签</th>
+                    <th class="col-2">内容</th>
+                    <th class="col-1">操作
+                      <i class="icon iconfont icon-xinzeng" style="float: right;font-size: 20px;" @click="addHead()"></i>
+                    </th>
                   </tr>
+                  <div class="api-head-shadow" v-if="showApiHead">
+                    <tr v-for="apihead, index in apiHeads">
+                      <td class="col-1"><span style="margin-left: 15px">{{index+1}}</span></td>
+                      <td class="col-2"><select class="" name="" v-model="apihead.head">
+                        <option value="0">Accept</option>
+                        <option value="1">Accept-Charset</option>
+                        <option value="2">Accept-Encoding</option>
+                        <option value="3">Accept-Language</option>
+                        <option value="4">Accept-Ranges</option>
+                        <option value="5">Content-Type</option>
+                      </select></td>
+                      <td class="col-2"><input type="text" name="" value="" v-model="apihead.name"></td>
+                      <td class="col-1"><span style="cursor: pointer" @click="removeHead(index)">删除</span></td>
+                    </tr>
+                  </div>
                 </div>
-              </div>
-              <div class="api-request">
-                <tr @click="showApiRequest = !showApiRequest">
-                  <th class="col-1" style="font-weight: bold">
-                    <i class="icon iconfont icon-zhankai1" v-if="!showApiRequest"></i>
-                    <i class="icon iconfont icon-shouqi" v-if="showApiRequest"></i>请求
-                  </th>
-                  <th class="col-1">参数</th>
-                  <th class="col-1">父参</th>
-                  <th class="col-2">类型</th>
-                  <th class="col-5">描述</th>
-                  <th class="col-2">操作
-                    <i class="icon iconfont icon-xinzeng" style="float: right;font-size: 20px;" @click="addRequest()"></i>
-                  </th>
-                </tr>
-                <div class="api-request-shadow" v-if="showApiRequest">
-                  <tr v-for="request,index in apiRequests">
-                    <td class="col-1">{{index+1}}
-                      <span style="padding: 0 5px;background: rgb(88, 219, 77);color:#ffffff;border-radius: 5px;margin-left: 3px"
-                      @click="request.required = !request.required">{{request.required}}</span>
-                    </td>
-                    <td class="col-1"><input type="text" v-model="request.key" style="max-width: 75px"></td>
-                    <td class="col-1">{{ request.parent.key }}</td>
-                    <td class="col-2">
-                      <select class="" name="" v-model="request.type">
+                <div class="api-request">
+                  <tr @click="showApiRequest = !showApiRequest">
+                    <th class="col-1" style="font-weight: bold">
+                      <i class="icon iconfont icon-zhankai1" v-if="!showApiRequest"></i>
+                      <i class="icon iconfont icon-shouqi" v-if="showApiRequest"></i>请求
+                    </th>
+                    <th class="col-1">参数</th>
+                    <th class="col-1">父参</th>
+                    <th class="col-2">类型</th>
+                    <th class="col-5">描述</th>
+                    <th class="col-2">操作
+                      <i class="icon iconfont icon-xinzeng" style="float: right;font-size: 20px;" @click="addRequest()"></i>
+                    </th>
+                  </tr>
+                  <div class="api-request-shadow" v-if="showApiRequest">
+                    <tr v-for="request,index in apiRequests">
+                      <td class="col-1">{{index+1}}
+                        <span style="padding: 0 5px;background: rgb(88, 219, 77);color:#ffffff;border-radius: 5px;margin-left: 3px"
+                        @click="request.required = !request.required">{{request.required}}</span>
+                      </td>
+                      <td class="col-1"><input type="text" v-model="request.key" style="max-width: 75px"></td>
+                      <td class="col-1">{{ request.parent.key }}</td>
+                      <td class="col-2">
+                        <select class="" name="" v-model="request.type">
+                          <option value="0">String</option>
+                          <option value="1">Number</option>
+                          <option value="2">Object</option>
+                          <option value="3">Array</option>
+                          <option value="4">Date</option>
+                        </select>
+                      </td>
+                      <td class="col-5"><input type="text" name="" value="" v-model="request.desc"></td>
+                      <td class="col-2">
+                        <span  @click="removeRequest(index)" style="cursor: pointer">删除</span>
+                        <i class="icon iconfont icon-tianjia"
+                            style="float: right;margin-right: 20px"
+                            @click="addChildRequest(request)"
+                            v-if="judgeType(request.type)">
+                        </i>
+                      </td>
+                    </tr>
+                  </div>
+                </div>
+                <div class="api-response">
+                  <tr @click="showApiResponse = !showApiResponse">
+                    <th class="col-1" style="font-weight: bold">
+                      <i class="icon iconfont icon-zhankai1" v-if="!showApiResponse"></i>
+                      <i class="icon iconfont icon-shouqi" v-if="showApiResponse"></i>
+                      返回
+                    </th>
+                    <th class="col-1">参数</th>
+                    <th class="col-1">父参</th>
+                    <th class="col-2">类型</th>
+                    <th class="col-5">描述</th>
+                    <th class="col-2">操作
+                      <i class="icon iconfont icon-xinzeng" style="float: right;font-size: 20px;" @click="addResponse()"></i>
+                    </th>
+                  </tr>
+                  <div class="api-response-shadow" v-if="showApiResponse">
+                    <tr v-for="response,index in apiResponses">
+                      <td class="col-1">{{index+1}}
+                        <span style="padding: 0 5px;background: rgb(88, 219, 77);color:#ffffff;border-radius: 5px;margin-left: 3px"
+                        @click="response.required = !response.required">{{response.required}}</span>
+                      </td>
+                      <td class="col-1"><input type="text" name="" value="" v-model="response.key" style="max-width: 150px"></td>
+                      <td class="col-1">{{ response.parent.key }}</td>
+                      <td class="col-2"><select class="" name="" v-model="response.type">
                         <option value="0">String</option>
                         <option value="1">Number</option>
                         <option value="2">Object</option>
                         <option value="3">Array</option>
                         <option value="4">Date</option>
-                      </select>
-                    </td>
-                    <td class="col-5"><input type="text" name="" value="" v-model="request.desc"></td>
-                    <td class="col-2">
-                      <span  @click="removeRequest(index)" style="cursor: pointer">删除</span>
-                      <i class="icon iconfont icon-tianjia"
-                          style="float: right;margin-right: 20px"
-                          @click="addChildRequest(request)"
-                          v-if="judgeType(request.type)">
-                      </i>
-                    </td>
-                  </tr>
+                      </select></td>
+                      <td class="col-5"><input type="text" name="" value="" v-model="response.desc"></td>
+                      <td class="col-2">
+                        <span @click="removeResponse(index)">删除</span>
+                        <i class="icon iconfont icon-tianjia"
+                            style="float: right;margin-right: 20px"
+                            @click="addChildResponse(response)"
+                            v-if="judgeType(response.type)">
+                        </i>
+                      </td>
+                    </tr>
+                  </div>
+                </div>
+                <div class="api-foot">
+                  <span @click="saveParam()">保存参数</span>
+                  <i class="icon iconfont icon-plumage"></i>
                 </div>
               </div>
-              <div class="api-response">
-                <tr @click="showApiResponse = !showApiResponse">
-                  <th class="col-1" style="font-weight: bold">
-                    <i class="icon iconfont icon-zhankai1" v-if="!showApiResponse"></i>
-                    <i class="icon iconfont icon-shouqi" v-if="showApiResponse"></i>
-                    返回
-                  </th>
-                  <th class="col-1">参数</th>
-                  <th class="col-1">父参</th>
-                  <th class="col-2">类型</th>
-                  <th class="col-5">描述</th>
-                  <th class="col-2">操作
-                    <i class="icon iconfont icon-xinzeng" style="float: right;font-size: 20px;" @click="addResponse()"></i>
-                  </th>
-                </tr>
-                <div class="api-response-shadow" v-if="showApiResponse">
-                  <tr v-for="response,index in apiResponses">
-                    <td class="col-1">{{index+1}}
-                      <span style="padding: 0 5px;background: rgb(88, 219, 77);color:#ffffff;border-radius: 5px;margin-left: 3px"
-                      @click="response.required = !response.required">{{response.required}}</span>
-                    </td>
-                    <td class="col-1"><input type="text" name="" value="" v-model="response.key" style="max-width: 150px"></td>
-                    <td class="col-1">{{ response.parent.key }}</td>
-                    <td class="col-2"><select class="" name="" v-model="response.type">
-                      <option value="0">String</option>
-                      <option value="1">Number</option>
-                      <option value="2">Object</option>
-                      <option value="3">Array</option>
-                      <option value="4">Date</option>
-                    </select></td>
-                    <td class="col-5"><input type="text" name="" value="" v-model="response.desc"></td>
-                    <td class="col-2">
-                      <span @click="removeResponse(index)">删除</span>
-                      <i class="icon iconfont icon-tianjia"
-                          style="float: right;margin-right: 20px"
-                          @click="addChildResponse(response)"
-                          v-if="judgeType(response.type)">
-                      </i>
-                    </td>
-                  </tr>
-                </div>
+              <div v-if="apiPage == 2 && !activeapi">
+                <p style="padding-top: 100px;font-size: 20px">请先在文档信息页面选择接口（API）</p>
               </div>
-              <div class="api-foot">
-                <span @click="saveParam()">保存参数</span>
-                <i class="icon iconfont icon-plumage"></i>
-              </div>
-            </div>
-            <div v-if="apiPage == 2 && !activeapi">
-              <p style="padding-top: 100px;font-size: 20px">请先在文档信息页面选择接口（API）</p>
-            </div>
-          </transition>
+            </transition>
             <div class="api-comment" v-if="apiPage == 1">
               <div class="api-comment-head" @click="showCommentPanel()">
                 <i class="icon iconfont icon-zhankai-left" v-if="!showComment"></i>
                 <i class="icon iconfont icon-zhankai" v-if="showComment"></i>
               </div>
-              <transition name="comment-slide" v-if="showComment">
-              <div class="api-comment-cont">
-                <div class="comment-head-nav">
-                  <h4>【评论】</h4>
-                </div>
-                <div class="api-comment-body">
-                  <div class="comment-body-shadow">
-                    <ul>
-                      <li v-for="comment,index in comments" @click="responseForComment(index, comment.id)">
-                        <div class="comment-head">
-                          <i>{{index+1}}楼</i>
-                          <ul>
-                            <li>{{ comment.name }}</li>
-                            <li>{{ comment.time }}</li>
-                          </ul>
-                        </div>
-                        <div class="comment-content" v-html="comment.preview">
-                        </div>
-                        <div class="comment-foot">
-                        </div>
-                      </li>
-                    </ul>
+              <transition name="comment-slide">
+                <div class="api-comment-cont" v-if="showComment">
+                  <div class="comment-head-nav">
+                    <h4>【评论】</h4>
+                  </div>
+                  <div class="api-comment-body">
+                    <div class="comment-body-shadow">
+                      <ul>
+                        <li v-for="comment,index in comments" @click="responseForComment(index, comment.id)">
+                          <div class="comment-head">
+                            <i>{{index+1}}楼</i>
+                            <ul>
+                              <li>{{ comment.name }}</li>
+                              <li>{{ comment.time }}</li>
+                            </ul>
+                          </div>
+                          <div class="comment-content" v-html="comment.preview">
+                          </div>
+                          <div class="comment-foot">
+                          </div>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                  <div class="api-comment-foot">
+                    <textarea id="commentEditor" name="name" rows="8" cols="80"></textarea>
+                    <div class="comment-foot-commit">
+                      <span @click="addComment()">发送</span>
+                    </div>
                   </div>
                 </div>
-                <div class="api-comment-foot">
-                  <textarea id="commentEditor" name="name" rows="8" cols="80"></textarea>
-                  <div class="comment-foot-commit">
-                    <span @click="addComment()">发送</span>
-                  </div>
-                </div>
-              </div>
-            </transition>
+              </transition>
             </div>
           </div>
         </div>
@@ -409,6 +409,10 @@ export default {
       'notShowMenu',
       'cancelBlur'
     ]),
+    goApi() {
+      this.apiPage = 2
+
+    },
     back(e) {
       this.notShowMenu()
       this.cancelBlur()
@@ -639,10 +643,14 @@ export default {
       self.apiPage = 0
     },
     gotoApiPage: function(){
-      var self = this
-      self.apiPage = 1
-      self.getComment(1)
-      if(self.key){
+      const self = this
+
+      this.apiPage = -1
+      
+      this.$nextTick(() => {
+        self.apiPage = 1
+        self.getComment(1)
+        // if(self.key){
         this.$nextTick(() => {
           self.editor = new Editor({
             element: document.getElementById('editor3'),
@@ -650,10 +658,12 @@ export default {
           self.editor.render()
           self.editor.togglePreview()
         })
-      }
-      self.key = false
+      })
+      // }
+      // self.key = false
     },
     getCommit(page){
+      console.log(this.editor)
       var self = this
       request
         .get('/apiManagerEndCode/src/commit.php')
@@ -1049,6 +1059,7 @@ export default {
           float: right
           font-size: 22px
           margin-right: 20px
+          cursor pointer
       .doc-cont
         width: 80%
         margin: 20px auto
@@ -1640,10 +1651,12 @@ export default {
           &:hover
             background: #fa3140
             color: #ffffff
+
 .comment-slide-enter-active, .comment-slide-leave-active
-  transition: all 0s
+  transition all 0
 .comment-slide-enter, .comment-slide-leave-active
-  right: -300px
+  transform translate3d(100%, 0, 0)
+  opacity 0
 .dialog-enter-active, .dialog-leave-active
   transition: all .5s cubic-bezier(.42,-0.26,.72,1.4)
 .dialog-enter, .dialog-leave-active
