@@ -32,14 +32,14 @@
                 <i class="icon iconfont icon-shanchu" @click="removeArray(persons, person.username)"></i>
               </span>
 
-              <input type="text" v-model="newPerson.username" placeholder="输入项目成员，‘enter’键添加" @keydown="boundle">
+              <input type="text" v-model="newPerson.username" placeholder="输入项目成员, 添加组员" @keydown="boundle">
 
             </div>
             <ul class="names-wrapper"
               v-show="nameWrapper.length!=0">
               <li class="name-item"
                 v-for="item of nameWrapper"
-                @click="addThinkPerson(item)">
+                @click="addThisPerson(item)">
                 <div class="avatar">
                   <img :src="item.avatar">
                 </div>
@@ -51,8 +51,8 @@
           </li>
         </ul>
         <div class="ensure">
-          <span class="createBtn" @click="createGroup()" v-if="newPage">创建</span>
-          <span class="createBtn" @click="addDoc()" v-if="!newPage">创建</span>
+          <span class="createBtn" @click="createGroup" v-if="newPage">创建</span>
+          <span class="createBtn" @click="addDoc" v-if="!newPage">创建</span>
           <i class="icon iconfont icon-plumage"></i>
         </div>
       </div>
@@ -133,16 +133,22 @@ export default {
           }
         })
     },
+    addThisPerson(item) {
+      console.log(item)
+      this.newPerson.userid = item.id
+      this.newPerson.username = item.username
+      this.addPerson()
+    },
     back(e) {
       this.notShowMenu()
       this.cancelBlur()
       this.$emit('cancelBlur')
       router.replace('/home')
     },
-    addPerson: function(){
-      var self = this
-      self.persons.push(self.newPerson)
-      self.newPerson = {}
+    addPerson(){
+      this.nameWrapper = []
+      this.persons.push(this.newPerson)
+      this.newPerson = {}
       //获取人物信息
     },
     getQueryString(name){
@@ -269,12 +275,12 @@ export default {
           })
       }
     },
-    createGroup: function(){
+    createGroup() {
       var self = this
       var ids = []
       ids.push(this.user.id)
-      for(i in self.persons){
-        ids.push(self.persons[i].id)
+      for(let item of self.persons){
+        ids.push(item.userid)
       }
       if (self.doc.title == ""){
         swal("文档标题不能为空哦")
@@ -309,11 +315,10 @@ export default {
                 .end(function(err, response){
                   var res = JSON.parse(response.text)
                   if(res.result == 1){
-                    swal(
-                      '创建成功',
-                      '',
-                      'success'
-                    )
+                    swal('创建成功', '','success')
+                      .then(() => {
+                        router.replace('/home/doc')
+                      })
                   }else if(res.result == 0){
                     swal(res.msg)
                   }else{
