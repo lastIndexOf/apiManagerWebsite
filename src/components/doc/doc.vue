@@ -58,13 +58,36 @@
                   </div>
                   <div class="group-persons">
                     <div class="group-header">
-                      <span>组长： {{group.headman}}</span>
+                      <span>组长： {{group.username}}</span>
                     </div>
                     <div class="group-others">
                       <ul>
                         <li v-for="person in groupPersons">成员：{{person}}</li>
                       </ul>
                     </div>
+                  </div>
+                  <div class="addNewPerson">
+                    <span>添加群组成员：</span>
+                    <div class="group-person">
+                      <span v-for="person in persons">
+                        {{person.username}}
+                        <i class="icon iconfont icon-shanchu" @click="removeArray(persons, person.username)"></i>
+                      </span>
+                      <input type="text" v-model="newPerson.username" placeholder="输入项目成员, 添加组员" @keydown="boundle">
+                    </div>
+                    <ul class="names-wrapper"
+                      v-show="nameWrapper.length!=0">
+                      <li class="name-item"
+                        v-for="item of nameWrapper"
+                        @click="addThisPerson(item)">
+                        <div class="avatar">
+                          <img :src="item.avatar">
+                        </div>
+                        <div class="username">
+                          {{ item.username }} <span class="name">{{ item.name }}</span>
+                        </div>
+                      </li>
+                    </ul>
                   </div>
                 </div>
                 <div class="group-right">
@@ -132,132 +155,179 @@
               </div>
               <div class="api-body-api api-infor" key="api" v-if="apiPage == 2 && activeapi">
                 <div class="api-title">
-                  <span class="test">测试</span>
+                  <a :href="'/apiManagerEndCode/apiTest.html?userid=' + use.id '&docid=' + api.id">
+                    <span class="test">测试</span>
+                  </a>
                   <div class="api-title-cont">
                     <div class="api-url">
                       <span class="green-back">{{docType[1]}}</span>
                       <span>{{api.url}}</span>
-                      <i class="icon iconfont icon-plumage" style="float: left;margin-left: 15px;cursor: pointer" @click="changeApiUrl(api.id)"></i>
+                      <i class="icon iconfont icon-plumage" style="float: left;margin-left: 15px;cursor: pointer" @click="changeApiUrl"></i>
                     </div>
                     <div class="api-desc">
                       <span class="green-back">{{api.type}}</span>
                       <span>{{api.desc}}</span>
-                      <i class="icon iconfont icon-plumage" style="float: left;margin-left: 15px;cursor: pointer" @click="changeApiName(api.desc)"></i>
+                      <i class="icon iconfont icon-plumage" style="float: left;margin-left: 15px;cursor: pointer" @click="changeApiName"></i>
                     </div>
                   </div>
                 </div>
-                <div class="api-head" type="table">
-                  <tr @click="showApiHead = !showApiHead">
-                    <th class="col-1" style="font-weight: bold">
-                      <i class="icon iconfont icon-zhankai1" v-if="!showApiHead"></i>
-                      <i class="icon iconfont icon-shouqi" v-if="showApiHead"></i>
-                      头部
-                    </th>
-                    <th class="col-2">标签</th>
-                    <th class="col-2">内容</th>
-                    <th class="col-1">操作
-                      <i class="icon iconfont icon-xinzeng" style="float: right;font-size: 20px;" @click="addHead()"></i>
-                    </th>
-                  </tr>
-                  <div class="api-head-shadow" v-if="showApiHead">
-                    <tr v-for="apihead, index in apiHeads">
-                      <td class="col-1"><span style="margin-left: 15px">{{index+1}}</span></td>
-                      <td class="col-2"><select class="" name="" v-model="apihead.head">
-                        <option value="0">Accept</option>
-                        <option value="1">Accept-Charset</option>
-                        <option value="2">Accept-Encoding</option>
-                        <option value="3">Accept-Language</option>
-                        <option value="4">Accept-Ranges</option>
-                        <option value="5">Content-Type</option>
-                      </select></td>
-                      <td class="col-2"><input type="text" name="" value="" v-model="apihead.name"></td>
-                      <td class="col-1"><span style="cursor: pointer" @click="removeHead(index)">删除</span></td>
+                <div class="api-scroll">
+                  <div class="api-head" type="table">
+                    <tr @click="showApiHead = !showApiHead">
+                      <th class="col-1" style="font-weight: bold">
+                        <i class="icon iconfont icon-zhankai1" v-if="!showApiHead"></i>
+                        <i class="icon iconfont icon-shouqi" v-if="showApiHead"></i>
+                        头部
+                      </th>
+                      <th class="col-2">标签</th>
+                      <th class="col-2">内容</th>
+                      <th class="col-1">操作
+                        <i class="icon iconfont icon-xinzeng" style="float: right;font-size: 20px;" @click="addHead()"></i>
+                      </th>
                     </tr>
+                    <div class="api-head-shadow" v-if="showApiHead">
+                      <tr v-for="apihead, index in apiHeads">
+                        <td class="col-1"><span style="margin-left: 15px">{{index+1}}</span></td>
+                        <td class="col-2"><select class="" name="" v-model="apihead.head">
+                          <option value="0">Accept</option>
+                          <option value="1">Accept-Charset</option>
+                          <option value="2">Accept-Encoding</option>
+                          <option value="3">Accept-Language</option>
+                          <option value="4">Accept-Ranges</option>
+                          <option value="5">Content-Type</option>
+                        </select></td>
+                        <td class="col-2"><input type="text" name="" value="" v-model="apihead.name"></td>
+                        <td class="col-1"><span style="cursor: pointer" @click="removeHead(index)">删除</span></td>
+                      </tr>
+                    </div>
                   </div>
-                </div>
-                <div class="api-request">
-                  <tr @click="showApiRequest = !showApiRequest">
-                    <th class="col-1" style="font-weight: bold">
-                      <i class="icon iconfont icon-zhankai1" v-if="!showApiRequest"></i>
-                      <i class="icon iconfont icon-shouqi" v-if="showApiRequest"></i>请求
-                    </th>
-                    <th class="col-1">参数</th>
-                    <th class="col-1">父参</th>
-                    <th class="col-2">类型</th>
-                    <th class="col-5">描述</th>
-                    <th class="col-2">操作
-                      <i class="icon iconfont icon-xinzeng" style="float: right;font-size: 20px;" @click="addRequest()"></i>
-                    </th>
-                  </tr>
-                  <div class="api-request-shadow" v-if="showApiRequest">
-                    <tr v-for="request,index in apiRequests">
-                      <td class="col-1">{{index+1}}
-                        <span style="padding: 0 5px;background: rgb(88, 219, 77);color:#ffffff;border-radius: 5px;margin-left: 3px"
-                        @click="request.required = !request.required">{{request.required}}</span>
-                      </td>
-                      <td class="col-1"><input type="text" v-model="request.key" style="max-width: 75px"></td>
-                      <td class="col-1">{{ request.parent.key }}</td>
-                      <td class="col-2">
-                        <select class="" name="" v-model="request.type">
+                  <div class="api-request">
+                    <tr @click="showApiRequest = !showApiRequest">
+                      <th class="col-1" style="font-weight: bold">
+                        <i class="icon iconfont icon-zhankai1" v-if="!showApiRequest"></i>
+                        <i class="icon iconfont icon-shouqi" v-if="showApiRequest"></i>请求
+                      </th>
+                      <th class="col-1">参数</th>
+                      <th class="col-1">父参</th>
+                      <th class="col-2">类型</th>
+                      <th class="col-5">描述</th>
+                      <th class="col-2">操作
+                        <i class="icon iconfont icon-xinzeng" style="float: right;font-size: 20px;" @click="addRequest()"></i>
+                      </th>
+                    </tr>
+                    <div class="api-request-shadow" v-if="showApiRequest">
+                      <tr v-for="request,index in apiRequests">
+                        <td class="col-1">{{index+1}}
+                          <span style="padding: 0 5px;background: rgb(88, 219, 77);color:#ffffff;border-radius: 5px;margin-left: 3px"
+                          @click="request.required = !request.required">{{request.required}}</span>
+                        </td>
+                        <td class="col-1"><input type="text" v-model="request.key" style="max-width: 75px"></td>
+                        <td class="col-1">{{ request.parent.key }}</td>
+                        <td class="col-2">
+                          <select class="" name="" v-model="request.type">
+                            <option value="0">String</option>
+                            <option value="1">Number</option>
+                            <option value="2">Object</option>
+                            <option value="3">Array</option>
+                            <option value="4">Date</option>
+                          </select>
+                        </td>
+                        <td class="col-5"><input type="text" name="" value="" v-model="request.desc"></td>
+                        <td class="col-2">
+                          <span  @click="removeRequest(index)" style="cursor: pointer">删除</span>
+                          <i class="icon iconfont icon-tianjia"
+                              style="float: right;margin-right: 20px"
+                              @click="addChildRequest(request)"
+                              v-if="judgeType(request.type)">
+                          </i>
+                        </td>
+                      </tr>
+                    </div>
+                  </div>
+                  <div class="api-response">
+                    <tr @click="showApiResponse = !showApiResponse">
+                      <th class="col-1" style="font-weight: bold">
+                        <i class="icon iconfont icon-zhankai1" v-if="!showApiResponse"></i>
+                        <i class="icon iconfont icon-shouqi" v-if="showApiResponse"></i>
+                        返回
+                      </th>
+                      <th class="col-1">参数</th>
+                      <th class="col-1">父参</th>
+                      <th class="col-2">类型</th>
+                      <th class="col-5">描述</th>
+                      <th class="col-2">操作
+                        <i class="icon iconfont icon-xinzeng" style="float: right;font-size: 20px;" @click="addResponse()"></i>
+                      </th>
+                    </tr>
+                    <div class="api-response-shadow" v-if="showApiResponse">
+                      <tr v-for="response,index in apiResponses">
+                        <td class="col-1">{{index+1}}
+                          <span style="padding: 0 5px;background: rgb(88, 219, 77);color:#ffffff;border-radius: 5px;margin-left: 3px"
+                          @click="response.required = !response.required">{{response.required}}</span>
+                        </td>
+                        <td class="col-1"><input type="text" name="" value="" v-model="response.key" style="max-width: 150px"></td>
+                        <td class="col-1">{{ response.parent.key }}</td>
+                        <td class="col-2"><select class="" name="" v-model="response.type">
                           <option value="0">String</option>
                           <option value="1">Number</option>
                           <option value="2">Object</option>
                           <option value="3">Array</option>
                           <option value="4">Date</option>
-                        </select>
-                      </td>
-                      <td class="col-5"><input type="text" name="" value="" v-model="request.desc"></td>
-                      <td class="col-2">
-                        <span  @click="removeRequest(index)" style="cursor: pointer">删除</span>
-                        <i class="icon iconfont icon-tianjia"
-                            style="float: right;margin-right: 20px"
-                            @click="addChildRequest(request)"
-                            v-if="judgeType(request.type)">
-                        </i>
-                      </td>
-                    </tr>
+                        </select></td>
+                        <td class="col-5"><input type="text" name="" value="" v-model="response.desc"></td>
+                        <td class="col-2">
+                          <span @click="removeResponse(index)">删除</span>
+                          <i class="icon iconfont icon-tianjia"
+                              style="float: right;margin-right: 20px"
+                              @click="addChildResponse(response)"
+                              v-if="judgeType(response.type)">
+                          </i>
+                        </td>
+                      </tr>
+                    </div>
                   </div>
-                </div>
-                <div class="api-response">
-                  <tr @click="showApiResponse = !showApiResponse">
-                    <th class="col-1" style="font-weight: bold">
-                      <i class="icon iconfont icon-zhankai1" v-if="!showApiResponse"></i>
-                      <i class="icon iconfont icon-shouqi" v-if="showApiResponse"></i>
-                      返回
-                    </th>
-                    <th class="col-1">参数</th>
-                    <th class="col-1">父参</th>
-                    <th class="col-2">类型</th>
-                    <th class="col-5">描述</th>
-                    <th class="col-2">操作
-                      <i class="icon iconfont icon-xinzeng" style="float: right;font-size: 20px;" @click="addResponse()"></i>
-                    </th>
-                  </tr>
-                  <div class="api-response-shadow" v-if="showApiResponse">
-                    <tr v-for="response,index in apiResponses">
-                      <td class="col-1">{{index+1}}
-                        <span style="padding: 0 5px;background: rgb(88, 219, 77);color:#ffffff;border-radius: 5px;margin-left: 3px"
-                        @click="response.required = !response.required">{{response.required}}</span>
-                      </td>
-                      <td class="col-1"><input type="text" name="" value="" v-model="response.key" style="max-width: 150px"></td>
-                      <td class="col-1">{{ response.parent.key }}</td>
-                      <td class="col-2"><select class="" name="" v-model="response.type">
-                        <option value="0">String</option>
-                        <option value="1">Number</option>
-                        <option value="2">Object</option>
-                        <option value="3">Array</option>
-                        <option value="4">Date</option>
-                      </select></td>
-                      <td class="col-5"><input type="text" name="" value="" v-model="response.desc"></td>
-                      <td class="col-2">
-                        <span @click="removeResponse(index)">删除</span>
-                        <i class="icon iconfont icon-tianjia"
-                            style="float: right;margin-right: 20px"
-                            @click="addChildResponse(response)"
-                            v-if="judgeType(response.type)">
-                        </i>
-                      </td>
+                  <div class="api-query">
+                    <tr @click="showApiQuery = !showApiQuery">
+                      <th class="col-1" style="font-weight: bold">
+                        <i class="icon iconfont icon-zhankai1" v-if="!showApiQuery"></i>
+                        <i class="icon iconfont icon-shouqi" v-if="showApiQuery"></i>查询
+                      </th>
+                      <th class="col-1">参数</th>
+                      <th class="col-1">父参</th>
+                      <th class="col-2">类型</th>
+                      <th class="col-5">描述</th>
+                      <th class="col-2">操作
+                        <i class="icon iconfont icon-xinzeng" style="float: right;font-size: 20px;" @click="addQuery()"></i>
+                      </th>
                     </tr>
+                    <div class="api-query-shadow" v-if="showApiQuery">
+                      <tr v-for="query,index in apiQuerys">
+                        <td class="col-1">{{index+1}}
+                          <span style="padding: 0 5px;background: rgb(88, 219, 77);color:#ffffff;border-radius: 5px;margin-left: 3px"
+                          @click="query.required = !query.required">{{query.required}}</span>
+                        </td>
+                        <td class="col-1"><input type="text" v-model="query.key" style="max-width: 75px"></td>
+                        <td class="col-1">{{ query.parent.key }}</td>
+                        <td class="col-2">
+                          <select class="" name="" v-model="query.type">
+                            <option value="0">String</option>
+                            <option value="1">Number</option>
+                            <option value="2">Object</option>
+                            <option value="3">Array</option>
+                            <option value="4">Date</option>
+                          </select>
+                        </td>
+                        <td class="col-5"><input type="text" name="" value="" v-model="query.desc"></td>
+                        <td class="col-2">
+                          <span  @click="removeQuery(index)" style="cursor: pointer">删除</span>
+                          <i class="icon iconfont icon-tianjia"
+                              style="float: right;margin-right: 20px"
+                              @click="addChildQuery(query)"
+                              v-if="judgeType(query.type)">
+                          </i>
+                        </td>
+                      </tr>
+                    </div>
                   </div>
                 </div>
                 <div class="api-foot">
@@ -286,7 +356,7 @@
                           <div class="comment-head">
                             <i>{{index+1}}楼</i>
                             <ul>
-                              <li>{{ comment.name }}</li>
+                              <li>{{ comment.username }}</li>
                               <li>{{ comment.time }}</li>
                             </ul>
                           </div>
@@ -356,6 +426,7 @@ import { mapMutations, mapState } from 'vuex'
 import request from 'superagent'
 import Vue from 'vue'
 
+
 export default {
   data() {
     return {
@@ -366,6 +437,11 @@ export default {
       apiPage: 0,
       group: {},
       groupPersons: [],
+      nameWrapper: [],
+      persons: [],
+      newPerson: {
+
+      },
       commits: [],
       doc: {},
       docType: ["",""],
@@ -388,6 +464,8 @@ export default {
       showApiRequest: true,
       apiResponses:[],
       showApiResponse: true,
+      apiQuerys: [],
+      showApiQuery: true,
       showComment: false,
       Apidialog: false,
       commentto: "",
@@ -399,7 +477,8 @@ export default {
   },
   computed: {
     ...mapState([
-      'showTabs'
+      'showTabs',
+      'user'
     ])
   },
   methods: {
@@ -513,6 +592,36 @@ export default {
     removeResponse: function(index){
       var self = this
       self.apiResponses.splice(index,1)
+    },
+    addQuery: function(){
+      var self = this
+      self.showApiQuery = false
+      self.apiQuerys.push({
+        api_id: self.api.id,
+        parent: "",
+        key: "",
+        required: true,
+        type: 0,
+        values: [],
+        desc: "",
+        children: []
+      })
+    },
+    addChildQuery: function(param){
+      var self = this
+      self.apiQuerys.push({
+        parent: param,
+        key: "",
+        requested: true,
+        type: 0,
+        values: [],
+        desc: "",
+        children: []
+      })
+    },
+    removeQuery: function(index){
+      var self = this
+      self.apiQuerys.splice(index,1)
     },
     addApi: function(){
       var self = this
@@ -658,7 +767,7 @@ export default {
       const self = this
 
       this.apiPage = -1
-      
+
       this.$nextTick(() => {
         self.apiPage = 1
         self.getComment(1)
@@ -669,7 +778,7 @@ export default {
           })
           self.editor.render()
           self.editor.togglePreview()
-          
+
           let timer = setTimeout(() => {
             clearTimeout(timer)
             timer = null
@@ -731,6 +840,7 @@ export default {
       var heads = self.apiHeads
       var requests = self.apiRequests
       var responses = self.apiResponses
+      var querys = self.apiQuerys
       var hash = {}
       //头部查重
       for (var i in heads){
@@ -747,6 +857,8 @@ export default {
         swal("请仔细检查请求避免出现重复哦")
       }else if(!self.findRepeat(responses)){
         swal("请仔细检查响应避免出现重复哦")
+      }else if(!self.findRepeat(querys)){
+        swal("请自己检查查询参数避免出现重复哦")
       }else{
         //请求参数数据
         var reqchildren = []
@@ -782,6 +894,24 @@ export default {
           if(key == 0){
             responses[i].parent = ""
             reschildren.push(responses[i])
+          }
+        }
+        //查询参数数据
+        var quechildren = []
+
+        for (var i in querys){
+          var key = 0
+          querys[i].children = []
+          for (var index = 0; index < i; index ++){
+            if(querys[i].parent == querys[index]){
+              querys[i].parent = ""
+              querys[index].children.push(querys[i])
+              key = 1
+            }
+          }
+          if(key == 0){
+            querys[i].parent = ""
+            quechildren.push(querys[i])
           }
         }
         swal({
@@ -820,7 +950,6 @@ export default {
                       if(res.result == 0){
                         swal(res.msg)
                       }else{
-                        swal('添加成功')
                       }
                     })
                   request
@@ -837,26 +966,39 @@ export default {
                       }else{
                       }
                     })
-                  request
-                    .post('/apiManagerEndCode/src/commit.php')
-                    .send({
-                      docsid: self.doc.id,
-                    	userid: self.user.id,
-                    	content: text
-                    })
-                    .set('Content-Type', 'application/x-www-form-urlencoded')
-                    .end(function(err, response){
-                      var res = JSON.parse(response.text)
-                      if(res.result == 0){
-                        swal(res.msg)
-                      }else{
-                        swal("修改成功")
-                      }
-                    })
-                } else {
-                  resolve()
+                    request
+                      .post('/apiManagerEndCode/src/query.php')
+                      .send({
+                        children: JSON.stringify(quechildren)
+                      })
+                      .set('Content-Type', 'application/x-www-form-urlencoded')
+                      .set('Accept', 'application/json')
+                      .end(function(err, response){
+                        var res = JSON.parse(response.text)
+                        if(res.result == 0){
+                          swal(res.msg)
+                        }else{
+                        }
+                      })
+                    request
+                      .post('/apiManagerEndCode/src/commit.php')
+                      .send({
+                        docsid: self.doc.id,
+                      	userid: self.user.id,
+                      	content: text
+                      })
+                      .set('Content-Type', 'application/x-www-form-urlencoded')
+                      .set('Accept', 'application/json')
+                      .end(function(err, response){
+                        var res = JSON.parse(response.text)
+                        if(res.result == 0){
+                          swal(res.msg)
+                        }else{
+                          swal("修改成功")
+                        }
+                      })
                 }
-              }, 2000)
+              }, 1000)
             })
           },
           allowOutsideClick: false
@@ -921,6 +1063,62 @@ export default {
             self.floor = ""
           }
         })
+    },
+    removeArray: function(arr, val){
+      for (var i = 0; i < arr.length; i ++){
+        if (arr[i].username == val){
+          arr.splice(i, 1)
+          break
+        }
+      }
+    },
+    boundle(e, timer = 500) {
+      clearTimeout(this.timer)
+
+      this.timer = setTimeout(() => {
+        this.addThinkPerson()
+      }, timer)
+    },
+    addThinkPerson(item) {
+      if (this.xhr) {
+        this.xhr.abort()
+      }
+
+      this.xhr = request.get('/apiManagerEndCode/src/group.php')
+        .type('form')
+        .query({
+          type: 5,
+          name: this.newPerson.username
+        })
+        .end((err, res) => {
+          if (err)
+            console.error(err)
+          else {
+            this.nameWrapper = []
+            const result = JSON.parse(res.text)
+            if (result.result == 1)
+              this.nameWrapper = JSON.parse(res.text).resultList
+          }
+        })
+    },
+    addThisPerson(item) {
+      let key = 0
+      for(var person of this.persons){
+        if(item.id == person.userid){
+          key = 1
+        }
+      }
+      if(key == 0){
+        this.newPerson.userid = item.id
+        this.newPerson.username = item.username
+        this.addPerson()
+      }
+    },
+    addPerson(){
+      this.nameWrapper = []
+      this.persons.push(this.newPerson)
+      this.newPerson = {}
+      //获取人物信息
     },
     getApiInfor: function(index,id){
       var self = this
@@ -997,6 +1195,84 @@ export default {
             }
           }
         })
+    },
+    changeApiUrl(){
+      var self = this
+      swal({
+        title: '修改接口路径',
+        input: 'text',
+        showCancelButton: true,
+        confirmButtonText: '确定',
+        showLoaderOnConfirm: true,
+        preConfirm: function (text) {
+          return new Promise(function (resolve, reject) {
+            setTimeout(function() {
+              if (text != "") {
+                request
+                  .put('/apiManagerEndCode/src/apis.php')
+                  .type('form')
+                  .send({
+                    apisid: self.api.id,
+                  	type: self.api.type,
+                  	url: text,
+                  	desc: self.api.desc
+                  })
+                  .end((err, response) => {
+                    var res = JSON.parse(response.text)
+                    if(res.result == 0){
+                      swal(res.mag)
+                    }else{
+                      swal("修改成功")
+                      self.api.url = text
+                    }
+                  })
+              } else {
+                resolve()
+              }
+            }, 2000)
+          })
+        },
+        allowOutsideClick: false
+      })
+    },
+    changeApiName(){
+      var self = this
+      swal({
+        title: '修改接口描述',
+        input: 'text',
+        showCancelButton: true,
+        confirmButtonText: '确定',
+        showLoaderOnConfirm: true,
+        preConfirm: function (text) {
+          return new Promise(function (resolve, reject) {
+            setTimeout(function() {
+              if (text != "") {
+                request
+                  .put('/apiManagerEndCode/src/apis.php')
+                  .type('form')
+                  .send({
+                    apisid: self.api.id,
+                  	type: self.api.type,
+                  	url: self.api.url,
+                  	desc: text
+                  })
+                  .end((err, response) => {
+                    var res = JSON.parse(response.text)
+                    if(res.result == 0){
+                      swal(res.mag)
+                    }else{
+                      swal("修改成功")
+                      self.api.desc = text
+                    }
+                  })
+              } else {
+                resolve()
+              }
+            }, 2000)
+          })
+        },
+        allowOutsideClick: false
+      })
     },
     responseForComment: function(index, id){
       var floor = Number(index) + 1
@@ -1194,7 +1470,7 @@ export default {
                   font-size: 22px
               .group-persons
                 width: 90%
-                height: 77%
+                height: 600px
                 margin: 10px auto
                 border: 1px solid rgb(185, 185, 185)
                 text-align: left
@@ -1213,6 +1489,51 @@ export default {
                   li
                     width: 100%
                     padding: 1px 0
+              .addNewPerson
+                width: 90%
+                text-align: left
+                margin: 20px auto
+                cursor pointer
+                position: relative
+                input
+                  display: block
+                  width: 100%
+                  height: 30px
+                  margin-top: 10px
+                  border 0
+                  border-bottom 1px solid rgb(122, 135, 172)
+                  color: rgb(157, 157, 157)
+                  background-color: rgba(249, 248, 194,0)
+                  text-indent: 5px
+                .names-wrapper
+                  position absolute
+                  width 100%
+                  max-height 120px
+                  overflow auto
+                  .name-item
+                    display flex
+                    flex-flow row wrap
+                    padding-top 5px
+                    &:hover
+                      background-color #0366d6
+                      color #fff
+                      .username
+                        .name
+                          color #fff
+                    .avatar
+                      flex 0 0 30px
+                      width 30px
+                      img
+                        width 30px
+                        height 30px
+                    .username
+                      flex 1
+                      padding-left 12px
+                      line-height 33px
+                      .name
+                        display inline-block
+                        font-size 12px
+                        color #666
             .group-right
               flex: 0 0 50%
               .group-dynamic
@@ -1335,6 +1656,7 @@ export default {
                     overflow: auto
         .api-body-api
           padding-top: 10px
+          overflow: hidden
           .api-title
             width: 91%
             height: 60px
@@ -1392,6 +1714,10 @@ export default {
                   background: rgb(73, 179, 74)
                   border-radius: 5px
                   color: #ffffff
+        .api-scroll
+          width: 102%
+          height: 700px
+          overflow: auto
           .api-head
             width: 90%
             margin: 0 auto
@@ -1498,6 +1824,50 @@ export default {
             .col-5
               width: 40%
           .api-response-shadow
+            width: 103%
+            height: 100%
+            overflow: auto
+            height: 180px
+            tr
+              display: block
+              width: 100%
+              text-align: left
+              td
+                display: inline-block
+                input
+                  background: rgba(0, 0, 0, 0)
+                  border: none
+                select
+                  background: rgba(0, 0, 0, 0)
+                  border: none
+                  outline: none
+              .col-1
+                width: 8%
+              .col-2
+                width: 16%
+              .col-5
+                width: 40%
+        .api-query
+          width: 90%
+          margin: 10px auto
+          padding: 5px
+          border-bottom: 1px solid rgb(120, 120, 120)
+          box-shadow: 0 0 2px rgb(69, 139, 163)
+          max-height: 200px
+          overflow: hidden
+          tr
+            display: block
+            width: 100%
+            text-align: left
+            th
+              display: inline-block
+            .col-1
+              width: 8%
+            .col-2
+              width: 16%
+            .col-5
+              width: 40%
+          .api-query-shadow
             width: 103%
             height: 100%
             overflow: auto

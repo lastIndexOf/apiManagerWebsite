@@ -134,10 +134,17 @@ export default {
         })
     },
     addThisPerson(item) {
-      console.log(item)
-      this.newPerson.userid = item.id
-      this.newPerson.username = item.username
-      this.addPerson()
+      let key = 0
+      for(var person of this.persons){
+        if(item.id == person.userid){
+          key = 1
+        }
+      }
+      if(key == 0){
+        this.newPerson.userid = item.id
+        this.newPerson.username = item.username
+        this.addPerson()
+      }
     },
     back(e) {
       this.notShowMenu()
