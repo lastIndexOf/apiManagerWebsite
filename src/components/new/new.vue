@@ -35,7 +35,7 @@
               <input type="text" v-model="newPerson.username" placeholder="输入项目成员，‘enter’键添加" @keydown="boundle">
 
             </div>
-            <ul class="names-wrapper" 
+            <ul class="names-wrapper"
               v-show="nameWrapper.length!=0">
               <li class="name-item"
                 v-for="item of nameWrapper"
@@ -126,14 +126,12 @@ export default {
             console.error(err)
           else {
             this.nameWrapper = []
-            
+
             const result = JSON.parse(res.text)
             if (result.result == 1)
               this.nameWrapper = JSON.parse(res.text).resultList
           }
         })
-      // this.newPerson.username = item.username 
-      // this.addPerson()
     },
     back(e) {
       this.notShowMenu()
@@ -164,7 +162,7 @@ export default {
         progressSteps: ['1', '2'],
         allowOutsideClick: false
       })
-      
+
       var steps = [
         {
           title: '创建文档',
@@ -228,7 +226,7 @@ export default {
           router.replace('/home')
           swal.resetDefaults()
         })
-        
+
     },
     removeArray: function(arr, val){
       for (var i = 0; i < arr.length; i ++){
