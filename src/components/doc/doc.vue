@@ -155,7 +155,7 @@
               </div>
               <div class="api-body-api api-infor" key="api" v-if="apiPage == 2 && activeapi">
                 <div class="api-title">
-                  <a :href="'/apiManagerEndCode/apiTest.html?userid=' + use.id '&docid=' + api.id">
+                  <a :href="gotoUrl">
                     <span class="test">测试</span>
                   </a>
                   <div class="api-title-cont">
@@ -479,7 +479,11 @@ export default {
     ...mapState([
       'showTabs',
       'user'
-    ])
+    ]),
+    gotoUrl: function(){
+      var url = '/apiManagerEndCode/apiTest.html?userid=' + this.user.id + '&docid=' + this.api.id
+      return url
+    }
   },
   methods: {
     ...mapMutations([
