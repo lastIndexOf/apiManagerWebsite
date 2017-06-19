@@ -167,7 +167,7 @@ export default {
       this.showGroup = !this.showGroup
     },
     share(id) {
-      this.socket.emit('create-new-message', this.oldText.preview, id)
+      this.socket.emit('create-new-message', this.oldText.preview, id, 1)
     },
     enterText(item) {
       this.activeId = item.id

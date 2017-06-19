@@ -150,7 +150,7 @@ export default {
           else {
             if (JSON.parse(res.text).result === 1) {
               this.cancelBlur()
-              window.location.href = '/'
+              window.location.href = '/apiManagerEndCode'
             }
           }
         })

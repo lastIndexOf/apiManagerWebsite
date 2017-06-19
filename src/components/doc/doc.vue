@@ -1699,7 +1699,7 @@ export default {
                   font-size: 22px
               .group-persons
                 width: 90%
-                height: 600px
+                height: 480px
                 margin: 10px auto
                 border: 1px solid rgb(185, 185, 185)
                 text-align: left

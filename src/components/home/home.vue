@@ -150,7 +150,7 @@ export default {
       this.newMessage = result
     })
     this.socket.on('inserted', result => {
-      if (result.code == 200)
+      if (result.code == 201)
         swal('', '分享成功', 'success')
     })
   },
