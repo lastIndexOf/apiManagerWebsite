@@ -9,10 +9,10 @@
         <div class="group-cont">
           <div class="group-list">
             <ul>
-              <li v-for="group in groupList" @click="getDocs(group.id, group.name)">
+              <li v-for="group,index in groupList" @click="getDocs(group.id, group.name)">
                 <span>{{group.name}}</span>
-                <i class="icon iconfont icon-bianji"></i>
-                <i>发起人：{{group.headman}}</i>
+                <i class="icon iconfont icon-bianji" v-if="group.headman == user.id" @click="deleteGroup(group.id, index)"></i>
+                <i>发起人：{{group.username}}</i>
               </li>
             </ul>
           </div>
@@ -54,7 +54,10 @@
                   <div class="group-title">
                     <i class="icon iconfont icon-qunzu"></i>
                     <span>{{group.name}}</span>
-                    <span style="font-size: 17px;float: right;font-weight: 400;margin-right: 10px">群组ID:{{group.id}}</span>
+                    <span style="font-size: 17px;
+                    float: right;
+                    font-weight: 400;
+                    margin-right: 10px">群组ID:{{group.id}}</span>
                   </div>
                   <div class="group-persons">
                     <div class="group-header">
@@ -62,12 +65,15 @@
                     </div>
                     <div class="group-others">
                       <ul>
-                        <li v-for="person in groupPersons">成员：{{person}}</li>
+                        <li v-for="person in groupPersons">成员：{{person.username}}
+                           <span style="float: right">{{person.phone}}</span>
+                         </li>
                       </ul>
                     </div>
                   </div>
                   <div class="addNewPerson">
                     <span>添加群组成员：</span>
+                    <span style="cursor: pointer;float: right" @click="postForAddPerson">确认添加</span>
                     <div class="group-person">
                       <span v-for="person in persons">
                         {{person.username}}
@@ -115,6 +121,13 @@
                 <div class="doc-left">
                   <div class="doc-title">
                     <span>{{doc.title}}</span>
+                    <span style="font-size: 15px;
+                    float: right;
+                    font-weight: 400px;
+                    margin-right: 10px;
+                    cursor: pointer;
+                    color: #535353;
+                    text-decoration: underline" @click="exportDoc">导出</span>
                     <span style="font-size: 17px;float: right;font-weight: 400;margin-right: 10px">文档ID:{{group.id}}</span>
                     <span class="type">{{ docType[0] }}</span>
                     <span class="type">{{ docType[1] }}</span>
@@ -123,6 +136,10 @@
                     <div class="doc-desc-cont">
                       <textarea id="editor3" name="name" rows="20" cols="80">{{ doc.desc }}</textarea>
                     </div>
+                  </div>
+                  <div class="doc-foot">
+                    <span @click="changeDoc">提交修改</span>
+                    <i class="icon iconfont icon-plumage"></i>
                   </div>
                 </div>
                 <div class="doc-right">
@@ -146,7 +163,7 @@
                             style="cursor: pointer">
                           <td>{{Api.desc}}</td>
                           <td style="width: 50%;"><span class="apiType">{{Api.type}}</span>{{Api.url}}</td>
-                          <td style="width: 15%;cursor: pointer"><span @click="deleteApi(index, Api.id)">删除</span></td>
+                          <td style="width: 15%;cursor: pointer"><span style="padding: 5px 0px" @click.stop="deleteApi(index, Api.id)">删除</span></td>
                         </tr>
                       </div>
                     </div>
@@ -410,7 +427,7 @@
           </li>
         </ul>
         <div class="dialog-foot">
-          <span @click="addApi()">确定</span>
+          <span @click="addApi">确定</span>
         </div>
       </div>
     </div>
@@ -642,41 +659,118 @@ export default {
           }else{
             self.newApi.id = res.id
             self.apis.push(self.newApi)
+            var cont = self.user.username + "创建接口'" + self.newApi.desc + "'"
+            request
+              .post('/apiManagerEndCode/src/commit.php')
+              .send({
+                docsid: self.doc.id,
+                userid: self.user.id,
+                content: self.user.username + "修改：" + cont
+              })
+              .set('Content-Type', 'application/x-www-form-urlencoded')
+              .set('Accept', 'application/json')
+              .end(function(err, response){
+                var res = JSON.parse(response.text)
+                if(res.result == 0){
+                  swal(res.msg)
+                }
+              })
             self.newApi = {
               docsid: "",
               type: "post",
               url: "",
               desc: ""
             }
-            swal(
-              '添加成功',
-              '',
-              'success'
-            )
+            swal('添加成功','','success')
             self.Apidialog = false
           }
         })
     },
     deleteApi: function(index, id){
       var self = this
+      swal({
+        title: '确认',
+        text: "确认要删除该接口吗",
+        type: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: '确定'
+      }).then(function () {
+        request
+          .del('/apiManagerEndCode/src/apis.php')
+          .send({
+            apisid: id
+          })
+          .set('Content-Type', 'application/x-www-form-urlencoded')
+          .set('Accept', 'application/json')
+          .end(function(err, response){
+            var res = JSON.parse(response.text)
+            if(res.result == 0){
+              swal(res.msg)
+            }else{
+              swal(
+                '删除成功',
+                '',
+                'success'
+              )
+              request
+                .post('/apiManagerEndCode/src/commit.php')
+                .send({
+                  docsid: self.doc.id,
+                  userid: self.user.id,
+                  content: self.user.username + "删除接口" + "'" + self.apis[index].desc + "'"
+                })
+                .set('Content-Type', 'application/x-www-form-urlencoded')
+                .set('Accept', 'application/json')
+                .end(function(err, response){
+                  var res = JSON.parse(response.text)
+                  if(res.result == 0){
+                    swal(res.msg)
+                  }
+                })
+              self.apis.splice(index,1)
+            }
+          })
+      })
+    },
+    postForAddPerson(){
+      var self = this
+      var ids = []
+      for(let person of self.persons){
+        ids.push(person.userid)
+      }
       request
-        .del('/apiManagerEndCode/src/apis.php')
-        .send({
-          apisid: id
+        .get('/apiManagerEndCode/src/group.php')
+        .type('form')
+        .query({
+          type: 6,
+          groupid: self.group.id,
+          ids: ids.join("+")
         })
-        .set('Content-Type', 'application/x-www-form-urlencoded')
-        .set('Accept', 'application/json')
-        .end(function(err, response){
+        .end((err, response) => {
           var res = JSON.parse(response.text)
           if(res.result == 0){
             swal(res.msg)
           }else{
-            swal(
-              '删除成功',
-              '',
-              'success'
-            )
-            self.apis.splice(index,1)
+            swal('添加成功', '', 'success')
+
+            request
+              .get('/apiManagerEndCode/src/group.php')
+              .query({
+                type: 4,
+      	        groupid: self.group.id
+              })
+              .set('Content-Type', 'application/x-www-form-urlencoded')
+              .end((err, response) => {
+                var res = JSON.parse(response.text)
+                if(res.result == 0){
+                  swal(res.msg)
+                }else{
+                  self.persons = []
+                  self.groupPersons = res.resultList
+                }
+              })
           }
         })
     },
@@ -748,6 +842,21 @@ export default {
           self.docType[0] = "多人文档"
           self.docType[1] = "Web"
       }
+      request
+        .get('/apiManagerEndCode/src/group.php')
+        .query({
+          type: 4,
+	        groupid: self.group.id
+        })
+        .set('Content-Type', 'application/x-www-form-urlencoded')
+        .end((err, response) => {
+          var res = JSON.parse(response.text)
+          if(res.result == 0){
+            swal(res.msg)
+          }else{
+            self.groupPersons = res.resultList
+          }
+        })
       request
         .get('/apiManagerEndCode/src/apis.php')
         .query({
@@ -1124,6 +1233,62 @@ export default {
       this.newPerson = {}
       //获取人物信息
     },
+    exportDoc(){
+      var self = this
+      request
+        .get('/apiManagerEndCode/src/operate_file.php')
+        .type('form')
+        .query({
+          docsid: self.doc.id
+        })
+        .end((err, response)=>{
+          var res = JSON.parse(response.text)
+          if(res.result == 0){
+            swal(res.msg)
+          }else{
+            var a = document.createElement('a');
+            var name = res.filepath.split("/")
+            var filename = name[name.length-1];
+            a.href = res.filepath;
+            a.download = filename;
+            a.click();
+          }
+        })
+    },
+    deleteGroup(id, index){
+      var self = this
+      swal({
+        title: '确认?',
+        text: "确定要解散小组吗!",
+        type: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: '确定'
+      }).then(function () {
+        request
+          .delete('/apiManagerEndCode/src/group.php')
+          .type('form')
+          .send({
+            groupid: id
+          })
+          .end((err, response)=>{
+            var res = JSON.parse(response.text)
+            if(res.result == 0){
+              swal(res.msg)
+            }else{
+              swal(
+                '成功',
+                '小组已解散',
+                'success'
+              )
+              self.groupList.splice(index, 1)
+              self.docList = []
+            }
+          })
+      })
+
+    },
     getApiInfor: function(index,id){
       var self = this
       self.apiPage = 2
@@ -1141,6 +1306,7 @@ export default {
           if(res.result == 0){
             swal(res.msg)
           }else{
+            self.apiRequests = []
             for(var i in res.resultList){
               if(res.resultList[i].parent != ""){
                 for(var j = 0; j < i; j++){
@@ -1184,6 +1350,7 @@ export default {
           if(res.result == 0){
             swal(res.msg)
           }else{
+            self.apiResponses = []
             for(var i in res.resultList){
               if(res.resultList[i].parent != ""){
                 for(var j = 0; j < i; j++){
@@ -1197,6 +1364,55 @@ export default {
                 self.apiResponses.push(res.resultList[i])
               }
             }
+          }
+        })
+        request
+          .get('/apiManagerEndCode/src/query.php')
+          .query({
+            api_id: id
+          })
+          .set('Content-Tyoe', 'application/x-www-form-urlencoded')
+          .set('Accept', 'application/json')
+          .end(function(err, response){
+            var res = JSON.parse(response.text)
+            if(res.result == 0){
+              swal(res.msg)
+            }else{
+              self.apiQuerys = []
+              for(var i in res.resultList){
+                if(res.resultList[i].parent != ""){
+                  for(var j = 0; j < i; j++){
+                    if(res.resultList[i].parent == res.resultList[j].id){
+                      res.resultList[i].parent = res.resultList[j]
+                      self.apiQuerys.push(res.resultList[i])
+                      break
+                    }
+                  }
+                }else{
+                  self.apiQuerys.push(res.resultList[i])
+                }
+              }
+            }
+          })
+    },
+    changeDoc(){
+      var self = this
+      self.doc.desc = self.editor.codemirror.getValue()
+      request
+        .put('/apiManagerEndCode/src/docs.php')
+        .type('form')
+        .send({
+          docsid: self.doc.id,
+        	title: self.doc.title,
+        	desc: self.doc.desc,
+        	type: self.doc.type
+        })
+        .end((err, response) => {
+          var res = JSON.parse(response.text)
+          if(res.result == 0){
+            swal(res.msg)
+          }else{
+            swal("修改成功",'','success')
           }
         })
     },
@@ -1358,6 +1574,7 @@ export default {
               border-bottom: 1px solid rgb(195, 195, 195)
               margin-top: 7px
               cursor: pointer
+              box-sizing: border-box;
               :hover
                 color: rgb(31, 31, 31)
               i
@@ -1497,7 +1714,6 @@ export default {
                 width: 90%
                 text-align: left
                 margin: 20px auto
-                cursor pointer
                 position: relative
                 input
                   display: block
@@ -1617,6 +1833,13 @@ export default {
                     height: 100%
                   .CodeMirror.cm-s-paper
                     height: 500px
+              .doc-foot
+                width: 90%
+                text-align: right
+                margin-top: 20px
+                font-size: 15px
+                span
+                  cursor: pointer
             .doc-right
               flex: 0 0 50%
               .doc-apis
