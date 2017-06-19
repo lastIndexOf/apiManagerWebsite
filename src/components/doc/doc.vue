@@ -206,12 +206,14 @@
                       <tr v-for="apihead, index in apiHeads">
                         <td class="col-1"><span style="margin-left: 15px">{{index+1}}</span></td>
                         <td class="col-2"><select class="" name="" v-model="apihead.head">
-                          <option value="0">Accept</option>
-                          <option value="1">Accept-Charset</option>
-                          <option value="2">Accept-Encoding</option>
-                          <option value="3">Accept-Language</option>
-                          <option value="4">Accept-Ranges</option>
-                          <option value="5">Content-Type</option>
+                          <option value="1">Accept</option>
+                          <option value="2">Accept-Charset</option>
+                          <option value="3">Accept-Encoding</option>
+                          <option value="4">Accept-Language</option>
+                          <option value="5">Accept-Ranges</option>
+                          <option value="6">Content-Type</option>
+                          <option value="7">Keep-Alive</option>
+                          <option value="8">Connection</option>
                         </select></td>
                         <td class="col-2"><input type="text" name="" value="" v-model="apihead.name"></td>
                         <td class="col-1"><span style="cursor: pointer" @click="removeHead(index)">删除</span></td>
@@ -242,11 +244,13 @@
                         <td class="col-1">{{ request.parent.key }}</td>
                         <td class="col-2">
                           <select class="" name="" v-model="request.type">
-                            <option value="0">String</option>
                             <option value="1">Number</option>
-                            <option value="2">Object</option>
+                            <option value="2">String</option>
                             <option value="3">Array</option>
-                            <option value="4">Date</option>
+                            <option value="4">Object</option>
+                            <option value="5">Date</option>
+                            <option value="6">Boolean</option>
+                            <option value="7">Symbol</option>
                           </select>
                         </td>
                         <td class="col-5"><input type="text" name="" value="" v-model="request.desc"></td>
@@ -285,11 +289,13 @@
                         <td class="col-1"><input type="text" name="" value="" v-model="response.key" style="max-width: 150px"></td>
                         <td class="col-1">{{ response.parent.key }}</td>
                         <td class="col-2"><select class="" name="" v-model="response.type">
-                          <option value="0">String</option>
                           <option value="1">Number</option>
-                          <option value="2">Object</option>
+                          <option value="2">String</option>
                           <option value="3">Array</option>
-                          <option value="4">Date</option>
+                          <option value="4">Object</option>
+                          <option value="5">Date</option>
+                          <option value="6">Boolean</option>
+                          <option value="7">Symbol</option>
                         </select></td>
                         <td class="col-5"><input type="text" name="" value="" v-model="response.desc"></td>
                         <td class="col-2">
@@ -327,11 +333,13 @@
                         <td class="col-1">{{ query.parent.key }}</td>
                         <td class="col-2">
                           <select class="" name="" v-model="query.type">
-                            <option value="0">String</option>
                             <option value="1">Number</option>
-                            <option value="2">Object</option>
+                            <option value="2">String</option>
                             <option value="3">Array</option>
-                            <option value="4">Date</option>
+                            <option value="4">Object</option>
+                            <option value="5">Date</option>
+                            <option value="6">Boolean</option>
+                            <option value="7">Symbol</option>
                           </select>
                         </td>
                         <td class="col-5"><input type="text" name="" value="" v-model="query.desc"></td>
@@ -545,7 +553,7 @@ export default {
       var self = this
       self.showApiHead = false
       self.apiHeads.push({
-        head: 0,
+        head: 1,
         name: "",
         api_id: self.api.id
       })
@@ -562,7 +570,7 @@ export default {
         parent: "",
         key: "",
         required: true,
-        type: 0,
+        type: 1,
         values: [],
         desc: "",
         children: []
@@ -574,7 +582,7 @@ export default {
         parent: param,
         key: "",
         requested: true,
-        type: 0,
+        type: 1,
         values: [],
         desc: "",
         children: []
@@ -592,7 +600,7 @@ export default {
         parent: "",
         key: "",
         required: true,
-        type: 0,
+        type: 1,
         values: [],
         desc: "",
         children: []
@@ -604,7 +612,7 @@ export default {
         parent: param,
         key: "",
         responsed: true,
-        type: 0,
+        type: 1,
         values: [],
         desc: "",
         children: []
@@ -622,7 +630,7 @@ export default {
         parent: "",
         key: "",
         required: true,
-        type: 0,
+        type: 1,
         values: [],
         desc: "",
         children: []
@@ -634,7 +642,7 @@ export default {
         parent: param,
         key: "",
         requested: true,
-        type: 0,
+        type: 1,
         values: [],
         desc: "",
         children: []
