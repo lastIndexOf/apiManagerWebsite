@@ -26,6 +26,7 @@
                   <time class="time">{{ item.time }}</time>
                   <span class="m-title">{{ item.mtitle }}</span>
                 </p>
+                <div class="remove-text" @click="removeText(item.id)" title="删除"><i class="iconfont icon-shanchu"></i></div>
               </div>
             </li>
           </ul>
@@ -56,11 +57,20 @@
           <div class="desc">
             <div class="content">
               <textarea id="editor" v-model="oldText.content" ref="text" >{{ oldText.content }}</textarea>
+              <div class="group-share" @click="shareGroup" title="分享到群组"><i class="iconfont icon-qunzu"></i></div>
             </div>
           </div>
           <div @click="editText" class="edit" title="修改"><i class="iconfont icon-bianji"></i></div>
         </div>
       </transition>
+    </div>
+
+    <div class="group-wrapper" v-show="showGroup">
+      <ul class="groups">
+        <li class="group" v-for="group of groups" @click="share(group.id)"> 
+          {{ group.name }}
+        </li>
+      </ul>
     </div>
   </div>
 </template>
@@ -79,12 +89,15 @@ export default {
       showAddText: true,
       text: {},
       oldText: {},
-      submitType: 'GET'
+      submitType: 'GET',
+      showGroup: false
     }
   },
   computed: {
     ...mapState([
-      'user'
+      'user',
+      'groups',
+      'socket'
     ])
   },
   methods: {
@@ -125,6 +138,36 @@ export default {
         })
       })
 
+    },
+    removeText(id) {
+      request.del('/apiManagerEndCode/src/note.php')
+        .type('form')
+        .send({
+          type: 1,
+          id
+        })
+        .end((err, res) => {
+          if (err)
+            console.error(err)
+          else {
+            const result = JSON.parse(res.text)
+
+            if (result.result == 1) {
+              swal('', '删除成功', 'success')
+              this.oldText = {}
+              this.refresh()
+            }
+            else {
+              swal('', result.msg, 'error')
+            }
+          }
+        })
+    },
+    shareGroup() {
+      this.showGroup = !this.showGroup
+    },
+    share(id) {
+      this.socket.emit('create-new-message', this.oldText.preview, id)
     },
     enterText(item) {
       this.activeId = item.id
@@ -222,6 +265,23 @@ body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,
   width 100%
   height 100%
   font-size 0
+  .group-wrapper
+    position fixed
+    top 60%
+    bottom 20%
+    left 70%
+    right 15%
+    overflow auto
+    z-index 9999
+    background-color #fff
+    box-shadow 2px 2px 10px #ddd, -2px -2px 10px #ddd
+    .groups
+      height 100%
+      .group
+        padding 12px
+        font-size 14px
+        cursor pointer
+        box-shadow 0 0 5px #ddd inset, -2px -2px 5px #ddd  inset 
   .CodeMirror.cm-s-paper
     max-height 100%
   .left-wrapper, .right-wrapper
@@ -280,6 +340,7 @@ body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,
             &.active
               background-color rgb(250, 255, 189)
             .item-wrapper
+              position relative
               border-bottom 1px solid #ddd
               .text-title
                 max-width 120px
@@ -293,6 +354,14 @@ body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,
                 padding-bottom 12px
                 @media screen and (min-width: 1440px)
                   max-width 180px
+              .remove-text
+                position absolute
+                right 36px 
+                top 0
+                padding 12px
+                &:hover
+                  .iconfont
+                    color #fa3140
               .desc
                 padding-left 12px
                 .time
@@ -373,6 +442,7 @@ body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,
         padding 8px
         height 90%
         .content
+          position relative
           height 90%
           padding 12px
           box-shadow 2px 2px 10px #ddd inset, 2px 2px 10px #ddd 
@@ -381,6 +451,13 @@ body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,
             width 100%
             height 100%
             font-size 20px
+          .group-share
+            position absolute
+            bottom 10%
+            right 5%
+            cursor pointer
+            .iconfont
+              font-size 24px
       .edit
         position absolute
         top -24px

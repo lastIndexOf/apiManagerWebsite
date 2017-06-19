@@ -141,7 +141,6 @@ export default {
       // this.addPerson()
     },
     addThisPerson(item) {
-      console.log(item)
       this.newPerson.userid = item.id
       this.newPerson.username = item.username
       this.addPerson()
@@ -154,6 +153,7 @@ export default {
     },
     addPerson(){
       this.nameWrapper = []
+      console.log(this.persons)
       this.persons.push(this.newPerson)
       this.newPerson = {}
       //获取人物信息
