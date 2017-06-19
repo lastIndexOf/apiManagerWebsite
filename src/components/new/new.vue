@@ -35,7 +35,7 @@
               <input type="text" v-model="newPerson.username" placeholder="输入项目成员, 添加组员" @keydown="boundle">
 
             </div>
-            <ul class="names-wrapper" 
+            <ul class="names-wrapper"
               v-show="nameWrapper.length!=0">
               <li class="name-item"
                 v-for="item of nameWrapper"
@@ -115,35 +115,37 @@ export default {
         this.xhr.abort()
       }
 
-      console.log(this.newPerson.username)
-      if (this.newPerson.username != '') {
-        this.xhr = request.get('/apiManagerEndCode/src/group.php')
-          .type('form')
-          .query({
-            type: 5,
-            name: this.newPerson.username
-          })
-          .end((err, res) => {
-            if (err)
-              console.error(err)
-            else {
-              this.nameWrapper = []
-              
-              const result = JSON.parse(res.text)
-              if (result.result == 1)
-                this.nameWrapper = JSON.parse(res.text).resultList
-            }
-          })
-      } else {
-        this.nameWrapper = []
-      }
-      // this.newPerson.username = item.username 
-      // this.addPerson()
+      this.xhr = request.get('/apiManagerEndCode/src/group.php')
+        .type('form')
+        .query({
+          type: 5,
+          name: this.newPerson.username
+        })
+        .end((err, res) => {
+          if (err)
+            console.error(err)
+          else {
+            this.nameWrapper = []
+
+            const result = JSON.parse(res.text)
+            if (result.result == 1)
+              this.nameWrapper = JSON.parse(res.text).resultList
+          }
+        })
     },
     addThisPerson(item) {
-      this.newPerson.userid = item.id
-      this.newPerson.username = item.username
-      this.addPerson()
+
+      let key = 0
+      for(var person of this.persons){
+        if(item.id == person.userid){
+          key = 1
+        }
+      }
+      if(key == 0){
+        this.newPerson.userid = item.id
+        this.newPerson.username = item.username
+        this.addPerson()
+      }
     },
     back(e) {
       this.notShowMenu()
@@ -175,7 +177,7 @@ export default {
         progressSteps: ['1', '2'],
         allowOutsideClick: false
       })
-      
+
       var steps = [
         {
           title: '创建文档',
@@ -239,7 +241,7 @@ export default {
           router.replace('/home')
           swal.resetDefaults()
         })
-        
+
     },
     removeArray: function(arr, val){
       for (var i = 0; i < arr.length; i ++){
