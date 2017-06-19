@@ -516,7 +516,7 @@ export default {
       'user'
     ]),
     gotoUrl: function(){
-      var url = '/apiManagerEndCode/apiTest.html?userid=' + this.user.id + '&docid=' + this.api.id
+      var url = '/apiManagerEndCode/apiTest.html?userid=' + this.user.id + '&apiid=' + this.api.id
       return url
     }
   },
@@ -549,7 +549,7 @@ export default {
       router.replace('/home')
     },
     judgeType(type){
-      if(type == 2||type == 3){
+      if(type == 3||type == 4){
         return true
       }else{
         return false
@@ -1607,7 +1607,7 @@ export default {
         i
           float: right
           font-size: 22px
-          margin-right: 20px
+          margin-right: 32px
           cursor pointer
       .doc-cont
         width: 80%
