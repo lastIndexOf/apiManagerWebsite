@@ -134,6 +134,7 @@ export default {
         })
     },
     addThisPerson(item) {
+
       let key = 0
       for(var person of this.persons){
         if(item.id == person.userid){
@@ -154,6 +155,7 @@ export default {
     },
     addPerson(){
       this.nameWrapper = []
+      console.log(this.persons)
       this.persons.push(this.newPerson)
       this.newPerson = {}
       //获取人物信息

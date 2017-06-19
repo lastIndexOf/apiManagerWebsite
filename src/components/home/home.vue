@@ -86,6 +86,7 @@
   </div>
 </template>
 <script>
+import swal from 'sweetalert2'
 import homeheader from '../homeHeader/homeHeader'
 import { mapState, mapActions, mapMutations } from 'vuex'
 import io from 'socket.io-client'
@@ -147,6 +148,10 @@ export default {
       }
 
       this.newMessage = result
+    })
+    this.socket.on('inserted', result => {
+      if (result.code == 200)
+        swal('', '分享成功', 'success')
     })
   },
   destroyed() {

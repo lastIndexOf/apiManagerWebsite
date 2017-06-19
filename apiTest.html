@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title></title>
+  <link rel="stylesheet" href="./sweetalert2.min.css">
+  <style>
+    body {
+      background-image: url(/apiManagerEndCode/imgs/bg_header.jpg);
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+    }
+    .test-log-wrapper {
+      text-align: center
+    }
+    .test-log-wrapper .logs {
+      list-style: none;
+    }
+    .test-log-wrapper .logs .log {
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <div id="test">
+    <form>
+      <div class="form-control">
+        <label for="host">服务器地址</label>
+        <input type="text" name="host">
+      </div>
+      <div class="form-control">
+        <label for="query">查询参数</label>
+        <input type="text" name="query" placeholder="形如: key1=value1&key2=value2&...">
+      </div>
+      <div class="form-control">
+        <label for="body">请求参数</label>
+        <input type="text" name="body" placeholder="形如: key1=value1&key2=value2&...">
+      </div>
+    </form>
+    
+  </div>
+
+
+  <div class="test-log-wrapper">
+    <ul class="logs" id="logs-wrapper">
+
+      
+    </ul>
+
+  </div>
+
+
+  <script src="./superagent.js"></script>
+  <script src="./socket.io.js"></script>
+  <script>
+    var query = {}
+
+    window.location.search.split('?')[1].split('&').forEach(function(obj) {
+      var arr = obj.split('=')
+
+      query[arr[0]] = arr[1]
+    })
+
+    var socket = io('http://localhost:4040')
+
+    socket.emit('get-api-test', query.apiid)
+    socket.on('send-api-test', function(result) {
+      var i
+      var tmp = ''
+      for (i = 0, len = result.length; i < len; i++) {
+        tmp += '<li class="log">' + result[i].content + '</li>'
+      }
+
+      document.querySelector('#logs-wrapper').innerHTML = tmp
+    })
+    // request.get('')
+    //   .type('form')
+    //   .end(function(err, res) {
+    //     if (err)
+    //       console.error(err.message)
+    //     else {
+    //       var result = JSON.parse(res.text)
+
+    //       var i
+    //       var tmp = ''
+    //       for (i = 0, len = result.result.length; i < len; i++) {
+    //         tmp += '<li class="log">' + result.result[i].content + '</li>'
+    //       }
+
+    //       document.querySelector('#logs-wrapper').innerHTML = tmp
+    //     }
+    //   })
+  </script>
+</body>
+</html>

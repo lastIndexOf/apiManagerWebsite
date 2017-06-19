@@ -53,8 +53,7 @@
                       <img :src="info.user.avatar" :title="info.user.name + ' ' + info.user.job ">
                     </div>
                     <div class="content">
-                      <div class="main">
-                        {{ info.content }}
+                      <div class="main" v-html="info.content">
                       </div>
                     </div>
                   </div>
