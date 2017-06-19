@@ -79,7 +79,7 @@
                         {{person.username}}
                         <i class="icon iconfont icon-shanchu" @click="removeArray(persons, person.username)"></i>
                       </span>
-                      <input type="text" v-model="newPerson.username" placeholder="输入项目成员, 添加组员" @keydown="boundle">
+                      <input type="text" v-model="newPerson.username" placeholder="输入项目成员, 添加组员" @keydown="boundle" @blur = "nameWrapper = []">
                     </div>
                     <ul class="names-wrapper"
                       v-show="nameWrapper.length!=0">
@@ -1734,10 +1734,12 @@ export default {
                   background-color: rgba(249, 248, 194,0)
                   text-indent: 5px
                 .names-wrapper
+                  background: white
                   position absolute
                   width 100%
                   max-height 120px
                   overflow auto
+                  bottom: 30px
                   .name-item
                     display flex
                     flex-flow row wrap
