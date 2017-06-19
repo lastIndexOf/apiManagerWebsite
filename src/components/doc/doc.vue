@@ -79,7 +79,7 @@
                         {{person.username}}
                         <i class="icon iconfont icon-shanchu" @click="removeArray(persons, person.username)"></i>
                       </span>
-                      <input type="text" v-model="newPerson.username" placeholder="输入项目成员, 添加组员" @keydown="boundle">
+                      <input type="text" v-model="newPerson.username" placeholder="输入项目成员, 添加组员" @keydown="boundle" @blur = "nameWrapper = []">
                     </div>
                     <ul class="names-wrapper"
                       v-show="nameWrapper.length!=0">
@@ -107,9 +107,15 @@
                       <ul>
                         <li v-for="commit in commits">
                           <i></i>
-                          <span>{{commit.content}}</span>
-                          <span style="margin-left: 10px">{{commit.name}}</span>
-                          <span class="commitor">{{commit.time}}</span>
+                          <span style="
+                            display: inline-block;
+                            width: 60%;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            white-space: nowrap;
+                            " :title="commit.content">{{commit.content}}</span>
+                          <span >{{commit.name}}</span>
+                          <span class="commitor" style="max-width: 35%;">{{commit.time}}</span>
                         </li>
                       </ul>
                     </transition>
@@ -162,7 +168,11 @@
                             @click="getApiInfor(index, Api.id)"
                             style="cursor: pointer">
                           <td>{{Api.desc}}</td>
-                          <td style="width: 50%;"><span class="apiType">{{Api.type}}</span>{{Api.url}}</td>
+                          <td style="width: 48%;
+                           white-space: nowrap;
+                           overflow: hidden;
+                           text-overflow: ellipsis"
+                           :title="Api.url"><span class="apiType">{{Api.type}}</span>{{Api.url}}</td>
                           <td style="width: 15%;cursor: pointer"><span style="padding: 5px 0px" @click.stop="deleteApi(index, Api.id)">删除</span></td>
                         </tr>
                       </div>
@@ -172,7 +182,7 @@
               </div>
               <div class="api-body-api api-infor" key="api" v-if="apiPage == 2 && activeapi">
                 <div class="api-title">
-                  <a :href="gotoUrl">
+                  <a :href="gotoUrl" target="_blank">
                     <span class="test">测试</span>
                   </a>
                   <div class="api-title-cont">
@@ -547,7 +557,6 @@ export default {
     },
     createDoc: function(){
       router.replace(`/home/new?id=${ this.group.id }&name=${ this.group.name }`)
-      // window.location = "/localhost:8080/#/home/new?id=" + this.group.id + "&name=" + this.group.name
     },
     addHead: function(){
       var self = this
@@ -673,7 +682,7 @@ export default {
               .send({
                 docsid: self.doc.id,
                 userid: self.user.id,
-                content: self.user.username + "修改：" + cont
+                content: cont
               })
               .set('Content-Type', 'application/x-www-form-urlencoded')
               .set('Accept', 'application/json')
@@ -1106,7 +1115,7 @@ export default {
                       .send({
                         docsid: self.doc.id,
                       	userid: self.user.id,
-                      	content: text
+                      	content: self.user.username + "修改接口" + self.api.sesc + ":" + text
                       })
                       .set('Content-Type', 'application/x-www-form-urlencoded')
                       .set('Accept', 'application/json')
@@ -1734,10 +1743,12 @@ export default {
                   background-color: rgba(249, 248, 194,0)
                   text-indent: 5px
                 .names-wrapper
+                  background: white
                   position absolute
                   width 100%
                   max-height 120px
                   overflow auto
+                  bottom: 30px
                   .name-item
                     display flex
                     flex-flow row wrap
@@ -1799,7 +1810,6 @@ export default {
                       z-index: 99
                     .commitor
                       float: right
-                      margin-right: 20px
           .api-body-doc
             display: flex
             flex-flow: row nowrap
@@ -2226,9 +2236,10 @@ export default {
                   border-radius: 10px
                   cursor: pointer
       .api-foot
-        margin-top: 20px
         width: 90%
         text-align: right
+        position: absolute
+        bottom: 10px
         span
           cursor: pointer
   .addApiDialog
