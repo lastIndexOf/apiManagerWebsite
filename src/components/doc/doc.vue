@@ -676,7 +676,7 @@ export default {
           }else{
             self.newApi.id = res.id
             self.apis.push(self.newApi)
-            var cont = self.user.username + "创建接口'" + self.newApi.desc + "'"
+            var cont = self.user.username + "创建接口'" + self.newApi.url + "'"
             request
               .post('/apiManagerEndCode/src/commit.php')
               .send({
@@ -928,7 +928,6 @@ export default {
       // self.key = false
     },
     getCommit(page){
-      console.log(this.editor)
       var self = this
       request
         .get('/apiManagerEndCode/src/commit.php')
@@ -1115,7 +1114,7 @@ export default {
                       .send({
                         docsid: self.doc.id,
                       	userid: self.user.id,
-                      	content: self.user.username + "修改接口" + self.api.sesc + ":" + text
+                      	content: self.user.username + "修改接口" + self.api.url + ":" + text
                       })
                       .set('Content-Type', 'application/x-www-form-urlencoded')
                       .set('Accept', 'application/json')
